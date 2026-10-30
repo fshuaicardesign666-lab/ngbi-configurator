@@ -2,550 +2,118 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NGBI · Bespoke Configurator 保时捷定制</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGBI · 五端架构</title>
 <style>
-  :root{
-    --bg:#0A0A0F; --panel:rgba(20,18,26,.88); --panel2:#1A1622; --line:rgba(255,255,255,.09);
-    --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0; --gold:#C8A96E;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
-  body{font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none;}
-  #stage{position:fixed;inset:0;cursor:grab;}
-  #stage:active{cursor:grabbing;}
-  canvas{display:block;}
+  :root{ --bg:#0A0A0F; --panel:#16121e; --line:rgba(255,255,255,.09); --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0; --gold:#C8A96E; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%, rgba(107,63,160,.25), transparent 60%), radial-gradient(800px 500px at 85% 110%, rgba(200,169,110,.1), transparent 60%);pointer-events:none;z-index:0}
 
-  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;pointer-events:none;background:linear-gradient(rgba(10,10,15,.9),transparent);}
-  .brand{display:flex;align-items:center;gap:10px;}
-  .enso{width:24px;height:24px;border:2px solid var(--accent2);border-radius:50%;flex:0 0 auto;}
-  .brand .t{font-size:13px;font-weight:700;letter-spacing:.18em;}
-  .brand .t span{color:var(--accent2);}
-  .brand .sub{font-size:8.5px;letter-spacing:.14em;color:var(--muted);margin-top:2px;}
-  .top .hint{font-size:9.5px;color:var(--muted);letter-spacing:.05em;}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:48px 24px 64px}
 
-  /* 左侧 checklist */
-  .side{position:fixed;left:0;top:0;bottom:0;width:262px;z-index:10;background:var(--panel);backdrop-filter:blur(18px);border-right:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;}
-  .side.open{transform:translateX(0);}
-  .side-head{padding:16px 16px 10px;border-bottom:1px solid var(--line);}
-  .side-head .t{font-size:11px;letter-spacing:.2em;color:var(--accent2);font-weight:700;}
-  .side-head .s{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.06em;}
-  .scroll{flex:1;overflow-y:auto;padding:10px 12px 40px;}
-  .cat{margin-bottom:8px;}
-  .cat-t{font-size:10px;letter-spacing:.14em;color:var(--muted);padding:12px 4px 6px;display:flex;align-items:center;gap:6px;}
-  .cat-t .ic{font-size:13px;}
-  .item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:11px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
-  .item:hover{background:rgba(255,255,255,.05);}
-  .item.on{background:rgba(107,63,160,.22);border-color:var(--accent2);}
-  .item .l{font-size:12px;letter-spacing:.03em;}
-  .item .l .en{display:block;font-size:8px;color:var(--muted);letter-spacing:.08em;margin-top:1px;text-transform:uppercase;}
-  .item .v{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
-  .item .v .dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.25);flex:0 0 auto;}
+  .brand{display:flex;align-items:center;gap:13px;justify-content:center;margin-bottom:8px}
+  .enso{width:34px;height:34px;border:2px solid var(--accent2);border-radius:50%}
+  .brand .t{font-size:22px;font-weight:700;letter-spacing:.22em}
+  .brand .t span{color:var(--accent2)}
 
-  /* 底部色板 */
-  .dock{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;gap:9px;align-items:center;max-width:94vw;}
-  .dock-t{font-size:11px;letter-spacing:.1em;color:var(--ink);}
-  .dock-t .en{color:var(--muted);font-size:9px;}
-  .tray{display:flex;gap:8px;padding:10px 13px;background:var(--panel);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:16px;max-width:94vw;overflow-x:auto;}
-  .swatch{min-width:42px;height:42px;border-radius:11px;border:2px solid transparent;cursor:pointer;transition:all .16s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;flex:0 0 auto;}
-  .swatch:hover{transform:translateY(-2px);}
-  .swatch.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.13);}
-  .swatch .nm{font-size:8px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);max-width:52px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .hero{text-align:center;margin:28px 0 44px}
+  .hero h1{font-size:34px;font-weight:700;letter-spacing:.06em;margin-bottom:12px}
+  .hero h1 .g{background:linear-gradient(120deg,#C8A96E,#E8D9B0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero .sub{font-size:11px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase}
+  .hero .desc{font-size:13px;color:var(--muted);margin-top:14px;letter-spacing:.04em}
 
-  /* 按钮 */
-  .menu{position:fixed;left:14px;top:58px;z-index:11;width:38px;height:38px;border-radius:11px;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);font-size:16px;cursor:pointer;}
-  .summary{position:fixed;right:14px;top:58px;z-index:11;height:38px;padding:0 14px;border-radius:11px;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);font-size:11px;cursor:pointer;letter-spacing:.06em;}
-  .save{position:fixed;right:14px;bottom:16px;z-index:11;background:linear-gradient(135deg,#6B3FA0,#4A2A78);color:#fff;border:none;border-radius:13px;padding:13px 20px;font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;box-shadow:0 6px 24px rgba(107,63,160,.4);}
-  .save:hover{transform:translateY(-2px);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
 
-  /* 配置摘要弹窗 */
-  .modal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(8,6,10,.65);backdrop-filter:blur(6px);}
-  .modal.show{display:flex;}
-  .sheet{background:#1A1622;border:1px solid var(--line);border-radius:20px;padding:24px;max-width:92vw;max-height:80vh;overflow-y:auto;position:relative;min-width:300px;}
-  .sheet h3{font-size:14px;letter-spacing:.1em;margin-bottom:4px;}
-  .sheet .sub{font-size:10px;color:var(--muted);margin-bottom:14px;letter-spacing:.06em;}
-  .sheet .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;}
-  .sheet .row .k{color:var(--muted);}
-  .sheet .row .val{color:var(--ink);display:flex;align-items:center;gap:6px;}
-  .sheet .row .val .dot{width:11px;height:11px;border-radius:50%;border:1px solid rgba(255,255,255,.25);}
-  .sheet .close{position:absolute;top:14px;right:18px;font-size:18px;color:var(--muted);cursor:pointer;}
+  .card{position:relative;background:linear-gradient(160deg,var(--panel),#110d16);border:1px solid var(--line);border-radius:20px;padding:26px;transition:transform .2s, border-color .2s, box-shadow .2s;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-height:190px}
+  .card:hover{transform:translateY(-4px);border-color:var(--accent2);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+  .card::after{content:"";position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 70%);opacity:.5}
+  .card .tag{display:inline-block;font-size:9px;letter-spacing:.18em;color:var(--gold);margin-bottom:12px}
+  .card .nm{font-size:19px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+  .card .nm small{font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.1em}
+  .card .ds{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px;flex:1}
+  .card .go{margin-top:16px;font-size:11px;letter-spacing:.1em;color:var(--accent2);display:flex;align-items:center;gap:6px}
+  .card .go::after{content:"→";transition:transform .2s}
+  .card:hover .go::after{transform:translateX(4px)}
+  .card.self-c{--glow:rgba(107,63,160,.5)}
+  .card.self-s{--glow:rgba(185,155,224,.5)}
+  .card.muse{--glow:rgba(200,169,110,.5)}
+  .card.forge{--glow:rgba(111,224,176,.4)}
+  .card.nexus{--glow:rgba(159,184,255,.4)}
+  .card.master{--glow:rgba(255,158,109,.4)}
 
-  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:40;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  .loading{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--bg);}
-  .loading .sp{width:38px;height:38px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--accent2);border-radius:50%;animation:spin 1s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media(max-width:640px){ .side{width:230px;} }
+  .foot{text-align:center;margin-top:52px;font-size:10px;letter-spacing:.2em;color:var(--muted)}
+  .foot .line{width:40px;height:1px;background:var(--gold);margin:0 auto 16px}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="brand"><div class="enso"></div><div class="t">NGBI <span>·</span> SYSTEM</div></div>
+  <div class="hero">
+    <h1>五端架构 · <span class="g">工业化个性化</span></h1>
+    <div class="sub">Infrastructure for Industrialized Individuality</div>
+    <div class="desc">从个体的意图，到灵感的诞生，到制造的实现——一条完整的定制链路</div>
+  </div>
 
-<div id="stage"></div>
-<div class="loading" id="loading"><div class="sp"></div></div>
+  <div class="grid">
+    <div class="card self-c" onclick="go('configurator.html?mode=self')">
+      <div class="tag">SELF · 客户端</div>
+      <div class="nm">个体定制 <small>CONSUMER</small></div>
+      <div class="ds">你的座驾，你来定义。沉浸式 3D 定制器，每一个零部件、每一处颜色材质，都随心而配。</div>
+      <div class="go">进入定制器</div>
+    </div>
 
-<div class="top">
-  <div class="brand">
-    <div class="enso"></div>
-    <div>
-      <div class="t">NGBI <span>·</span> BESPOKE</div>
-      <div class="sub">INFRASTRUCTURE FOR INDUSTRIALIZED INDIVIDUALITY</div>
+    <div class="card self-s" onclick="go('configurator.html?mode=sales')">
+      <div class="tag">SELF · 销售端</div>
+      <div class="nm">顾问定制 <small>SALES</small></div>
+      <div class="ds">销售顾问协助客户共创，实时呈现每一处选择，生成可交付的 bespoke 配置方案。</div>
+      <div class="go">进入顾问端</div>
+    </div>
+
+    <div class="card muse" onclick="go('configurator.html?mode=muse')">
+      <div class="tag">MUSE · 设计端</div>
+      <div class="nm">灵感创作 <small>DESIGN</small></div>
+      <div class="ds">设计师的创作工坊——CMF 材质、图形纹样、造型比例，在这里把灵感变成可制造的形态。</div>
+      <div class="go">进入设计端</div>
+    </div>
+
+    <div class="card forge" onclick="soon('FORGE · 制造端')">
+      <div class="tag">FORGE · 制造端</div>
+      <div class="nm">制造实现 <small>FORGE</small></div>
+      <div class="ds">3D 打印、金属打印、柔性产线——把定制方案直接转化为可制造的指令。</div>
+      <div class="go">制造视图（建设中）</div>
+    </div>
+
+    <div class="card nexus" onclick="soon('NEXUS · 连接端')">
+      <div class="tag">NEXUS · 连接端</div>
+      <div class="nm">生态连接 <small>NEXUS</small></div>
+      <div class="ds">供应链、合作伙伴、数据流通——让个性化定制的生态无缝协同。</div>
+      <div class="go">连接视图（建设中）</div>
+    </div>
+
+    <div class="card master" onclick="soon('MASTER · 管理端')">
+      <div class="tag">MASTER · 管理端</div>
+      <div class="nm">数据与权限 <small>MASTER</small></div>
+      <div class="ds">订单、客户、权限、分析——统揽全局的管理中枢。</div>
+      <div class="go">管理后台（建设中）</div>
     </div>
   </div>
-  <div class="hint">拖拽旋转 · 滚轮缩放 · 自动旋转</div>
-</div>
 
-<button class="menu" id="menuBtn">☰</button>
-<button class="summary" id="summaryBtn">配置清单</button>
-
-<div class="side" id="side">
-  <div class="side-head">
-    <div class="t">BESPOKE 配置清单</div>
-    <div class="s">18 个定制维度 · 每个零部件都可换</div>
-  </div>
-  <div class="scroll" id="checklist"></div>
-</div>
-
-<div class="dock">
-  <div class="dock-t" id="dockTitle">车漆 <span class="en">PAINT</span></div>
-  <div class="tray" id="tray"></div>
-</div>
-
-<button class="save" id="saveBtn">生成配置卡 ✦</button>
-
-<div class="modal" id="summaryModal">
-  <div class="sheet">
-    <div class="close" id="summaryClose">✕</div>
-    <h3>你的定制清单</h3>
-    <div class="sub">YOUR BESPOKE SPECIFICATION</div>
-    <div id="summaryRows"></div>
+  <div class="foot">
+    <div class="line"></div>
+    Build the capability before the market arrives.
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<script type="importmap">
-{"imports":{
-  "three":"https://unpkg.com/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"
-}}
-</script>
-
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-
-/* ==================== 配置数据 ==================== */
-const PALETTES = {
-  paint: [
-    {name:'卫红', color:0xd5001c},{name:'赛车黄', color:0xf2d50f},{name:'GT银', color:0xc9ccd1},
-    {name:'迈阿密蓝', color:0x00a3c4},{name:'午夜蓝', color:0x0a1e3f},{name:'蜥蜴绿', color:0x7ac70c},
-    {name:'熔岩橙', color:0xff5a00},{name:'石墨灰', color:0x3a3f45},{name:'香槟金', color:0xc0a878},
-    {name:'紫罗兰', color:0x5c2a7a},{name:'卡拉拉白', color:0xf2f2ec},{name:'曜石黑', color:0x0c0c0e},
-    {name:'帕西菲克蓝', color:0x1a3a6b},{name:'爱尔兰绿', color:0x0a3a2a},{name:'珊瑚红', color:0xc2410c},
-    {name:'海风青', color:0x7fb3b0},{name:'鹅黄', color:0xe8c547},{name:'雾银', color:0xaab0b6},
-    {name:'勃艮第', color:0x4a0e1e},{name:'石墨蓝', color:0x1e2a38},
-  ],
-  rim: [
-    {name:'铂银', color:0xd8d8dd},{name:'曜黑', color:0x1a1a1e},{name:'钛金', color:0x9a8f7a},
-    {name:'枪灰', color:0x4a4a52},{name:'香槟', color:0xb89a6a},{name:'哑光黑', color:0x252529},
-  ],
-  caliper: [
-    {name:'保时捷红', color:0xd5001c},{name:'荧光黄', color:0xf2d50f},{name:'曜黑', color:0x1a1a1e},
-    {name:'钛银', color:0xc0c0c6},{name:'熔岩橙', color:0xff5a00},
-  ],
-  lights: [
-    {name:'晶白', color:0xffffff},{name:'冰蓝', color:0x9fd4ff},{name:'暖黄', color:0xffe0a0},{name:'熏黑', color:0x8890a0},
-  ],
-  glass: [
-    {name:'清透', color:0x0a0f14},{name:'中深', color:0x050a0e},{name:'深黑', color:0x020406},
-  ],
-  trim: [
-    {name:'曜黑', color:0x1a1a1e},{name:'车身同色', color:null},{name:'钛银', color:0xb8bcc4},{name:'碳纤', color:0x22242a},
-  ],
-  leather: [
-    {name:'象牙白', color:0xe8e2d4},{name:'墨黑', color:0x1c1a1a},{name:'焦糖棕', color:0x8a5a2a},{name:'波尔多红', color:0x6e1a1a},
-    {name:'灰蓝', color:0x4a5560},{name:'苔绿', color:0x3a4a3a},{name:'香草', color:0xd8cba8},{name:'午夜紫', color:0x3a2450},
-  ],
-  stitch: [
-    {name:'米白', color:0xe8e2d4},{name:'红', color:0xd5001c},{name:'金', color:0xc8a96e},{name:'蓝', color:0x2a4a8a},{name:'绿', color:0x3a6a3a},{name:'橙', color:0xff6a00},
-  ],
-  veneer: [
-    {name:'胡桃木', color:0x6a4a2a},{name:'钢琴黑', color:0x0e0e12},{name:'碳纤维', color:0x1a1c20},{name:'拉丝铝', color:0xa8adb4},{name:'金丝木', color:0x9a7a4a},{name:'玫瑰金', color:0xb87a6a},
-  ],
-  starlight: [
-    {name:'关闭', color:0x000000},{name:'银河白', color:0xd8dcff},{name:'极光蓝', color:0x88aaff},{name:'暖金', color:0xffd8a0},
-  ],
-  doorpanel: [
-    {name:'同座椅', color:null},{name:'象牙白', color:0xe8e2d4},{name:'墨黑', color:0x1c1a1a},{name:'波尔多红', color:0x6e1a1a},{name:'灰蓝', color:0x4a5560},
-  ],
-  seatback: [
-    {name:'同座椅', color:null},{name:'钢琴黑', color:0x0e0e12},{name:'胡桃木', color:0x6a4a2a},{name:'碳纤维', color:0x1a1c20},
-  ],
-  fascia: [
-    {name:'皮革', color:0x1c1a1a},{name:'胡桃木', color:0x6a4a2a},{name:'碳纤维', color:0x1a1c20},{name:'拉丝铝', color:0xa8adb4},{name:'钢琴黑', color:0x0e0e12},
-  ],
-  embroidery: [
-    {name:'无', color:null},{name:'皇冠徽记', color:0xc8a96e},{name:'姓名缩写', color:0xd8d8dd},{name:'家族纹章', color:0xc8a96e},{name:'星座', color:0x88aaff},{name:'年份', color:0xd8d8dd},
-  ],
-  seattexture: [
-    {name:'光滑', color:null},{name:'菱形绗缝', color:null},{name:'竖纹', color:null},{name:'穿孔', color:null},{name:'雕花', color:null},
-  ],
-  treadplate: [
-    {name:'拉丝钢', color:0xb8bcc4},{name:'发光白', color:0xd8dcff},{name:'碳纤', color:0x1a1c20},{name:'古铜', color:0x9a7a5a},
-  ],
-  coachline: [
-    {name:'无', color:null},{name:'香槟金', color:0xc8a96e},{name:'铂银', color:0xd8d8dd},{name:'卫红', color:0xd5001c},{name:'象牙白', color:0xf2f2ec},
-  ],
-  stripes: [
-    {name:'无', color:null},{name:'曜黑', color:0x1a1a1e},{name:'卫红', color:0xd5001c},{name:'珍珠白', color:0xf2f2ec},{name:'香槟金', color:0xc8a96e},
-  ],
-  frontpattern: [
-    {name:'无', color:null},{name:'盾徽', color:0xc8a96e},{name:'几何纹', color:0xc8a96e},{name:'赛道格', color:0xd8d8dd},
-  ],
-  rearpattern: [
-    {name:'无', color:null},{name:'盾徽', color:0xc8a96e},{name:'几何纹', color:0xc8a96e},{name:'型号字样', color:0xd8d8dd},
-  ],
-  mood: [
-    {name:'极昼展厅', color:0x9fb8ff, bg:0x12182a},{name:'暮色落霞', color:0xff9e6d, bg:0x1a1210},{name:'翡翠赛道', color:0x6fe0b0, bg:0x0e1a16},{name:'紫夜霓虹', color:0xb99be0, bg:0x140f1e},
-  ],
-  scene: [
-    {name:'暗夜展厅', bg:0x0a0a0f, color:0x0a0a0f},{name:'都市夜景', bg:0x10141e, color:0x10141e},{name:'赛道黄昏', bg:0x1a1410, color:0x1a1410},{name:'摄影棚白', bg:0x15181e, color:0x15181e},
-  ],
-};
-
-// 配置清单结构（18项，3组）
-const CHECKLIST = [
-  { cat:'外观', ic:'🎨', items:[
-    {id:'paint', label:'车漆', en:'Paint', apply:'paint'},
-    {id:'rim', label:'轮毂', en:'Rims', apply:'rim'},
-    {id:'caliper', label:'刹车卡钳', en:'Caliper', apply:'caliper'},
-    {id:'lights', label:'前灯/尾灯', en:'Lights', apply:'lights'},
-    {id:'glass', label:'车窗玻璃', en:'Glass', apply:'glass'},
-    {id:'trim', label:'外观饰件', en:'Trim', apply:'trim'},
-    {id:'coachline', label:'腰线', en:'Coachline', apply:'coachline'},
-    {id:'stripes', label:'赛道条纹', en:'Stripes', apply:'stripes'},
-    {id:'frontpattern', label:'前盖图案', en:'Front Pattern', apply:'frontpattern'},
-    {id:'rearpattern', label:'尾盖图案', en:'Rear Pattern', apply:'rearpattern'},
-  ]},
-  { cat:'内饰', ic:'🛋️', items:[
-    {id:'leather', label:'皮革', en:'Leather'},
-    {id:'stitch', label:'缝线', en:'Stitching'},
-    {id:'veneer', label:'饰板', en:'Veneer'},
-    {id:'starlight', label:'星空顶', en:'Starlight'},
-    {id:'doorpanel', label:'门板', en:'Door Panel'},
-    {id:'seatback', label:'座椅背板', en:'Seat Back'},
-    {id:'fascia', label:'仪表台', en:'Fascia'},
-    {id:'embroidery', label:'头枕刺绣', en:'Embroidery'},
-    {id:'seattexture', label:'座椅纹理', en:'Texture'},
-    {id:'treadplate', label:'迎宾踏板', en:'Tread Plate'},
-  ]},
-  { cat:'数码', ic:'✨', items:[
-    {id:'mood', label:'氛围光', en:'Mood', apply:'mood'},
-    {id:'scene', label:'场景', en:'Scene', apply:'scene'},
-  ]},
-];
-
-const state = {};   // { paint:0, rim:0, ... }
-CHECKLIST.forEach(c=>c.items.forEach(it=>{ state[it.id]=0; }));
-
-/* ==================== 渲染器 ==================== */
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.getElementById('stage').appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0A0A0F);
-try{ const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.06).texture; }catch(e){}
-
-const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.1, 200);
-camera.position.set(6, 2.4, 8);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0.6, 0); controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.minDistance = 3; controls.maxDistance = 20; controls.maxPolarAngle = Math.PI*0.55;
-controls.autoRotate = true; controls.autoRotateSpeed = 0.7; controls.update();
-
-scene.add(new THREE.HemisphereLight(0xdfe4ff, 0x14101a, 0.8));
-const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(6,9,6);
-key.castShadow = true; key.shadow.mapSize.set(2048,2048);
-key.shadow.camera.left=-10; key.shadow.camera.right=10; key.shadow.camera.top=10; key.shadow.camera.bottom=-10;
-scene.add(key);
-scene.add(new THREE.DirectionalLight(0x8899ff,1.5).position.set(-5,2,-4));
-scene.add(new THREE.DirectionalLight(0xffd9a8,0.7).position.set(-3,1,5));
-const moodLight = new THREE.PointLight(0x9fb8ff, 0, 12); moodLight.position.set(0,2,0); scene.add(moodLight);
-
-const floor = new THREE.Mesh(new THREE.CircleGeometry(16,96), new THREE.MeshStandardMaterial({color:0x0d0b10, roughness:0.25, metalness:0.6}));
-floor.rotation.x = -Math.PI/2; floor.position.y = -0.01; floor.receiveShadow = true; scene.add(floor);
-
-/* ==================== 模型 + 材质映射 ==================== */
-const carRoot = new THREE.Group(); scene.add(carRoot);
-const MAT = { paint:[], rim:[], caliper:[], lights:[], glass:[], plastic:[], black:[] };
-const overlays = { coachline:[], stripes:[], front:null, rear:null };
-
-const loader = new GLTFLoader();
-loader.load('https://raw.githubusercontent.com/Bhavydeveloper77/BhavyDave_Porsche/master/public/Porsche911.glb', (gltf)=>{
-  const model = gltf.scene;
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-  const s = 5.0 / Math.max(size.x,size.y,size.z);
-  model.scale.setScalar(s);
-  model.position.x -= center.x*s; model.position.z -= center.z*s; model.position.y -= box.min.y*s;
-
-  model.traverse((o)=>{
-    if(o.isMesh){
-      o.castShadow = true; o.receiveShadow = true;
-      const mats = Array.isArray(o.material) ? o.material : [o.material];
-      mats.forEach(m=>{
-        const n = (m.name||'').toLowerCase();
-        if(n==='paint'||n==='coat') MAT.paint.push(m);
-        else if(n==='silver') MAT.rim.push(m);
-        else if(n==='material.001') MAT.caliper.push(m);
-        else if(n==='lights') MAT.lights.push(m);
-        else if(n==='window'||n==='glass') MAT.glass.push(m);
-        else if(n==='plastic') MAT.plastic.push(m);
-        else if(n==='full_black'||n==='material') MAT.black.push(m);
-      });
-    }
-  });
-  carRoot.add(model);
-  createOverlays(model);
-  refreshAll();
-  document.getElementById('loading').style.display = 'none';
-  console.log('材质映射:', Object.fromEntries(Object.entries(MAT).map(([k,v])=>[k,v.length])));
-}, (x)=>{}, ()=>{ document.getElementById('loading').innerHTML = '<span style="color:#8A8494">模型加载失败，请刷新</span>'; });
-
-/* ==================== 应用函数 ==================== */
-function setColor(mats, hex, metalness, roughness){
-  mats.forEach(m=>{ if(hex!==null){ m.color.setHex(hex); } m.metalness=metalness; m.roughness=roughness; });
-}
-const APPLY = {
-  paint(){ setColor(MAT.paint, PALETTES.paint[state.paint].color, 0.4, 0.42); },
-  rim(){ setColor(MAT.rim, PALETTES.rim[state.rim].color, 0.85, 0.3); },
-  caliper(){ setColor(MAT.caliper, PALETTES.caliper[state.caliper].color, 0.5, 0.35); },
-  lights(){ setColor(MAT.lights, PALETTES.lights[state.lights].color, 0.1, 0.4); },
-  glass(){ setColor(MAT.glass, PALETTES.glass[state.glass].color, 0.1, 0.1); },
-  trim(){
-    const c = PALETTES.trim[state.trim];
-    setColor(MAT.plastic, c.color===null ? PALETTES.paint[state.paint].color : c.color, 0.3, 0.5);
-  },
-  mood(){
-    const m = PALETTES.mood[state.mood];
-    moodLight.color.setHex(m.color); moodLight.intensity = 3.0; scene.background.setHex(m.bg);
-  },
-  scene(){
-    const m = PALETTES.scene[state.scene];
-    // 场景只改背景色（氛围光已独立）；若 mood 也用背景，则 scene 优先
-    scene.background.setHex(m.bg);
-  },
-  coachline(){
-    const c = PALETTES.coachline[state.coachline];
-    overlays.coachline.forEach(m=>{ m.visible = c.color!==null; if(c.color!==null) m.material.color.setHex(c.color); });
-  },
-  stripes(){
-    const c = PALETTES.stripes[state.stripes];
-    overlays.stripes.forEach(m=>{ m.visible = c.color!==null; if(c.color!==null) m.material.color.setHex(c.color); });
-  },
-  frontpattern(){ applyPattern(overlays.front, PALETTES.frontpattern[state.frontpattern]); },
-  rearpattern(){ applyPattern(overlays.rear, PALETTES.rearpattern[state.rearpattern]); },
-};
-function refreshAll(){ Object.values(APPLY).forEach(f=>f()); }
-
-/* ==================== 图形纹样叠加 ==================== */
-function createOverlays(model){
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const L = size.x, W = size.z;
-  const cy = box.min.y + size.y*0.55;
-
-  // coachline 左右两条细线
-  for(const side of [-1,1]){
-    const cl = new THREE.Mesh(
-      new THREE.BoxGeometry(L*0.96, 0.015, 0.015),
-      new THREE.MeshStandardMaterial({ color:0xc8a96e, metalness:0.8, roughness:0.3 })
-    );
-    cl.position.set(0, cy, side*(W/2 + 0.012));
-    cl.visible = false;
-    overlays.coachline.push(cl); carRoot.add(cl);
+<script>
+  function go(url){ location.href = url; }
+  function soon(name){
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A1622;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px 18px;font-size:12px;z-index:99;color:#F2EFF7';
+    t.textContent = '✦ ' + name + ' 建设中，敬请期待';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 1800);
   }
-  // racing stripes 两条纵向条纹
-  for(const off of [-0.35, 0.35]){
-    const st = new THREE.Mesh(
-      new THREE.PlaneGeometry(L*0.9, 0.22),
-      new THREE.MeshStandardMaterial({ color:0xffffff, metalness:0.3, roughness:0.5 })
-    );
-    st.rotation.x = -Math.PI/2;
-    st.position.set(0, box.max.y + 0.008, off);
-    st.visible = false;
-    overlays.stripes.push(st); carRoot.add(st);
-  }
-  overlays.front = makeDecal(box, L*0.28);
-  overlays.rear = makeDecal(box, -L*0.28);
-}
-function makeDecal(box, xOff){
-  const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 512;
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.anisotropy = 4;
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.62, 0.62),
-    new THREE.MeshStandardMaterial({ map:tex, transparent:true, metalness:0.4, roughness:0.35 })
-  );
-  mesh.rotation.x = -Math.PI/2;
-  mesh.position.set(xOff, box.max.y + 0.01, 0);
-  mesh.visible = false;
-  carRoot.add(mesh);
-  return mesh;
-}
-function applyPattern(mesh, opt){
-  if(!mesh) return;
-  if(opt.color===null){ mesh.visible = false; return; }
-  mesh.visible = true;
-  drawPattern(mesh.material.map.image, opt.name);
-  mesh.material.map.needsUpdate = true;
-}
-function drawPattern(canvas, name){
-  const c = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  c.clearRect(0,0,w,h);
-  const gold = '#c8a96e', light = '#e8e0cc';
-  c.lineWidth = 14; c.strokeStyle = gold; c.fillStyle = gold;
-  if(name==='盾徽'){
-    c.beginPath();
-    c.moveTo(w/2, h*0.1);
-    c.lineTo(w*0.82, h*0.22); c.lineTo(w*0.82, h*0.55);
-    c.quadraticCurveTo(w*0.82, h*0.78, w/2, h*0.9);
-    c.quadraticCurveTo(w*0.18, h*0.78, w*0.18, h*0.55);
-    c.lineTo(w*0.18, h*0.22); c.closePath();
-    c.stroke();
-    c.font = 'bold 120px serif'; c.textAlign='center'; c.textBaseline='middle';
-    c.fillStyle = gold; c.fillText('N', w/2, h*0.5);
-  } else if(name==='几何纹'){
-    for(let i=0;i<3;i++){
-      const r = h*0.3 - i*h*0.07;
-      c.beginPath();
-      c.moveTo(w/2, h/2 - r); c.lineTo(w/2 + r, h/2); c.lineTo(w/2, h/2 + r); c.lineTo(w/2 - r, h/2);
-      c.closePath(); c.stroke();
-    }
-  } else if(name==='赛道格'){
-    const n=4, s=w/n;
-    for(let i=0;i<n;i++) for(let j=0;j<n;j++){
-      if((i+j)%2===0){ c.fillStyle=gold; c.fillRect(i*s,j*s,s,s); }
-    }
-  } else if(name==='型号字样'){
-    c.font = 'bold 130px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
-    c.fillStyle = light; c.fillText('911', w/2, h/2);
-  }
-}
-
-/* ==================== UI 渲染 ==================== */
-const checklistEl = document.getElementById('checklist');
-CHECKLIST.forEach(cat=>{
-  const ct = document.createElement('div'); ct.className='cat';
-  ct.innerHTML = `<div class="cat-t"><span class="ic">${cat.ic}</span>${cat.cat}</div>`;
-  cat.items.forEach(it=>{
-    const d = document.createElement('div'); d.className='item'; d.dataset.id = it.id;
-    d.innerHTML = `<div class="l">${it.label}<span class="en">${it.en}</span></div><div class="v"><span class="val-txt"></span><span class="dot" style="background:transparent"></span></div>`;
-    d.onclick = ()=> selectItem(it.id);
-    ct.appendChild(d);
-  });
-  checklistEl.appendChild(ct);
-});
-
-let currentId = 'paint';
-function selectItem(id){
-  currentId = id;
-  document.querySelectorAll('.item').forEach(el=>el.classList.toggle('on', el.dataset.id===id));
-  renderTray(id);
-  renderDockTitle(id);
-}
-function findItem(id){ for(const c of CHECKLIST) for(const it of c.items) if(it.id===id) return it; }
-
-function renderDockTitle(id){
-  const it = findItem(id);
-  document.getElementById('dockTitle').innerHTML = `${it.label} <span class="en">${it.en}</span>`;
-}
-function renderTray(id){
-  const tray = document.getElementById('tray'); tray.innerHTML='';
-  PALETTES[id].forEach((o,i)=>{
-    const d = document.createElement('div');
-    d.className = 'swatch' + (i===state[id]?' on':'');
-    const bg = o.color===null ? 'linear-gradient(135deg,#333,#777)' : '#'+o.color.toString(16).padStart(6,'0');
-    d.style.background = bg;
-    d.innerHTML = `<span class="nm">${o.name}</span>`;
-    d.onclick = ()=>{
-      state[id]=i;
-      document.querySelectorAll('#tray .swatch').forEach((s,j)=>s.classList.toggle('on',j===i));
-      updateChecklist();
-      const it = findItem(id);
-      if(it.apply) APPLY[it.apply]();
-      // trim 的"车身同色"需要跟随车漆
-      if(id==='paint' && state.trim>0 && PALETTES.trim[state.trim].color===null) APPLY.trim();
-      toast(o.name);
-    };
-    tray.appendChild(d);
-  });
-}
-function updateChecklist(){
-  document.querySelectorAll('.item').forEach(el=>{
-    const id = el.dataset.id; const o = PALETTES[id][state[id]];
-    const dot = el.querySelector('.dot'); const vt = el.querySelector('.val-txt');
-    if(o.color===null){ dot.style.background='linear-gradient(135deg,#555,#888)'; }
-    else { dot.style.background = '#'+o.color.toString(16).padStart(6,'0'); }
-    vt.textContent = o.name;
-  });
-}
-
-/* ==================== 摘要 ==================== */
-function showSummary(){
-  const rows = document.getElementById('summaryRows'); rows.innerHTML='';
-  CHECKLIST.forEach(cat=>{
-    rows.insertAdjacentHTML('beforeend', `<div class="row" style="margin-top:6px;font-weight:600;color:var(--accent2)">${cat.cat}</div>`);
-    cat.items.forEach(it=>{
-      const o = PALETTES[it.id][state[it.id]];
-      const dot = o.color===null ? '' : `<span class="dot" style="background:#${o.color.toString(16).padStart(6,'0')}"></span>`;
-      rows.insertAdjacentHTML('beforeend', `<div class="row"><span class="k">${it.label}</span><span class="val">${o.name}${dot}</span></div>`);
-    });
-  });
-  document.getElementById('summaryModal').classList.add('show');
-}
-
-/* ==================== 事件 ==================== */
-document.getElementById('menuBtn').onclick = ()=> document.getElementById('side').classList.toggle('open');
-document.getElementById('summaryBtn').onclick = showSummary;
-document.getElementById('summaryClose').onclick = ()=> document.getElementById('summaryModal').classList.remove('show');
-document.getElementById('summaryModal').onclick = (e)=>{ if(e.target.id==='summaryModal') e.target.classList.remove('show'); };
-
-document.getElementById('saveBtn').onclick = ()=>{
-  const lines = ['NGBI BESPOKE · 保时捷定制清单','━━━━━━━━━━━━━━━━━━'];
-  CHECKLIST.forEach(cat=>{
-    lines.push('【'+cat.cat+'】');
-    cat.items.forEach(it=>{ lines.push(`  ${it.label}  →  ${PALETTES[it.id][state[it.id]].name}`); });
-  });
-  lines.push('━━━━━━━━━━━━━━━━━━','Build the capability before the market arrives.');
-  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'NGBI_定制清单.txt'; a.click();
-  toast('配置卡已生成');
-};
-
-function toast(msg){
-  const t = document.getElementById('toast'); t.textContent = '✦ '+msg; t.classList.add('show');
-  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 1300);
-}
-
-/* ==================== 初始化 ==================== */
-selectItem('paint');
-updateChecklist();
-window.__cfg = { scene, camera, carRoot, MAT, state, PALETTES };
-
-function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera); }
-animate();
-addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 </script>
 </body>
 </html>
