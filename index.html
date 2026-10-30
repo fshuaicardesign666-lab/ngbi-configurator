@@ -195,6 +195,18 @@ const PALETTES = {
   treadplate: [
     {name:'拉丝钢', color:0xb8bcc4},{name:'发光白', color:0xd8dcff},{name:'碳纤', color:0x1a1c20},{name:'古铜', color:0x9a7a5a},
   ],
+  coachline: [
+    {name:'无', color:null},{name:'香槟金', color:0xc8a96e},{name:'铂银', color:0xd8d8dd},{name:'卫红', color:0xd5001c},{name:'象牙白', color:0xf2f2ec},
+  ],
+  stripes: [
+    {name:'无', color:null},{name:'曜黑', color:0x1a1a1e},{name:'卫红', color:0xd5001c},{name:'珍珠白', color:0xf2f2ec},{name:'香槟金', color:0xc8a96e},
+  ],
+  frontpattern: [
+    {name:'无', color:null},{name:'盾徽', color:0xc8a96e},{name:'几何纹', color:0xc8a96e},{name:'赛道格', color:0xd8d8dd},
+  ],
+  rearpattern: [
+    {name:'无', color:null},{name:'盾徽', color:0xc8a96e},{name:'几何纹', color:0xc8a96e},{name:'型号字样', color:0xd8d8dd},
+  ],
   mood: [
     {name:'极昼展厅', color:0x9fb8ff, bg:0x12182a},{name:'暮色落霞', color:0xff9e6d, bg:0x1a1210},{name:'翡翠赛道', color:0x6fe0b0, bg:0x0e1a16},{name:'紫夜霓虹', color:0xb99be0, bg:0x140f1e},
   ],
@@ -212,6 +224,10 @@ const CHECKLIST = [
     {id:'lights', label:'前灯/尾灯', en:'Lights', apply:'lights'},
     {id:'glass', label:'车窗玻璃', en:'Glass', apply:'glass'},
     {id:'trim', label:'外观饰件', en:'Trim', apply:'trim'},
+    {id:'coachline', label:'腰线', en:'Coachline', apply:'coachline'},
+    {id:'stripes', label:'赛道条纹', en:'Stripes', apply:'stripes'},
+    {id:'frontpattern', label:'前盖图案', en:'Front Pattern', apply:'frontpattern'},
+    {id:'rearpattern', label:'尾盖图案', en:'Rear Pattern', apply:'rearpattern'},
   ]},
   { cat:'内饰', ic:'🛋️', items:[
     {id:'leather', label:'皮革', en:'Leather'},
@@ -270,6 +286,7 @@ floor.rotation.x = -Math.PI/2; floor.position.y = -0.01; floor.receiveShadow = t
 /* ==================== 模型 + 材质映射 ==================== */
 const carRoot = new THREE.Group(); scene.add(carRoot);
 const MAT = { paint:[], rim:[], caliper:[], lights:[], glass:[], plastic:[], black:[] };
+const overlays = { coachline:[], stripes:[], front:null, rear:null };
 
 const loader = new GLTFLoader();
 loader.load('https://raw.githubusercontent.com/Bhavydeveloper77/BhavyDave_Porsche/master/public/Porsche911.glb', (gltf)=>{
@@ -297,6 +314,7 @@ loader.load('https://raw.githubusercontent.com/Bhavydeveloper77/BhavyDave_Porsch
     }
   });
   carRoot.add(model);
+  createOverlays(model);
   refreshAll();
   document.getElementById('loading').style.display = 'none';
   console.log('材质映射:', Object.fromEntries(Object.entries(MAT).map(([k,v])=>[k,v.length])));
@@ -325,8 +343,105 @@ const APPLY = {
     // 场景只改背景色（氛围光已独立）；若 mood 也用背景，则 scene 优先
     scene.background.setHex(m.bg);
   },
+  coachline(){
+    const c = PALETTES.coachline[state.coachline];
+    overlays.coachline.forEach(m=>{ m.visible = c.color!==null; if(c.color!==null) m.material.color.setHex(c.color); });
+  },
+  stripes(){
+    const c = PALETTES.stripes[state.stripes];
+    overlays.stripes.forEach(m=>{ m.visible = c.color!==null; if(c.color!==null) m.material.color.setHex(c.color); });
+  },
+  frontpattern(){ applyPattern(overlays.front, PALETTES.frontpattern[state.frontpattern]); },
+  rearpattern(){ applyPattern(overlays.rear, PALETTES.rearpattern[state.rearpattern]); },
 };
 function refreshAll(){ Object.values(APPLY).forEach(f=>f()); }
+
+/* ==================== 图形纹样叠加 ==================== */
+function createOverlays(model){
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const L = size.x, W = size.z;
+  const cy = box.min.y + size.y*0.55;
+
+  // coachline 左右两条细线
+  for(const side of [-1,1]){
+    const cl = new THREE.Mesh(
+      new THREE.BoxGeometry(L*0.96, 0.015, 0.015),
+      new THREE.MeshStandardMaterial({ color:0xc8a96e, metalness:0.8, roughness:0.3 })
+    );
+    cl.position.set(0, cy, side*(W/2 + 0.012));
+    cl.visible = false;
+    overlays.coachline.push(cl); carRoot.add(cl);
+  }
+  // racing stripes 两条纵向条纹
+  for(const off of [-0.35, 0.35]){
+    const st = new THREE.Mesh(
+      new THREE.PlaneGeometry(L*0.9, 0.22),
+      new THREE.MeshStandardMaterial({ color:0xffffff, metalness:0.3, roughness:0.5 })
+    );
+    st.rotation.x = -Math.PI/2;
+    st.position.set(0, box.max.y + 0.008, off);
+    st.visible = false;
+    overlays.stripes.push(st); carRoot.add(st);
+  }
+  overlays.front = makeDecal(box, L*0.28);
+  overlays.rear = makeDecal(box, -L*0.28);
+}
+function makeDecal(box, xOff){
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 4;
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.62, 0.62),
+    new THREE.MeshStandardMaterial({ map:tex, transparent:true, metalness:0.4, roughness:0.35 })
+  );
+  mesh.rotation.x = -Math.PI/2;
+  mesh.position.set(xOff, box.max.y + 0.01, 0);
+  mesh.visible = false;
+  carRoot.add(mesh);
+  return mesh;
+}
+function applyPattern(mesh, opt){
+  if(!mesh) return;
+  if(opt.color===null){ mesh.visible = false; return; }
+  mesh.visible = true;
+  drawPattern(mesh.material.map.image, opt.name);
+  mesh.material.map.needsUpdate = true;
+}
+function drawPattern(canvas, name){
+  const c = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  c.clearRect(0,0,w,h);
+  const gold = '#c8a96e', light = '#e8e0cc';
+  c.lineWidth = 14; c.strokeStyle = gold; c.fillStyle = gold;
+  if(name==='盾徽'){
+    c.beginPath();
+    c.moveTo(w/2, h*0.1);
+    c.lineTo(w*0.82, h*0.22); c.lineTo(w*0.82, h*0.55);
+    c.quadraticCurveTo(w*0.82, h*0.78, w/2, h*0.9);
+    c.quadraticCurveTo(w*0.18, h*0.78, w*0.18, h*0.55);
+    c.lineTo(w*0.18, h*0.22); c.closePath();
+    c.stroke();
+    c.font = 'bold 120px serif'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle = gold; c.fillText('N', w/2, h*0.5);
+  } else if(name==='几何纹'){
+    for(let i=0;i<3;i++){
+      const r = h*0.3 - i*h*0.07;
+      c.beginPath();
+      c.moveTo(w/2, h/2 - r); c.lineTo(w/2 + r, h/2); c.lineTo(w/2, h/2 + r); c.lineTo(w/2 - r, h/2);
+      c.closePath(); c.stroke();
+    }
+  } else if(name==='赛道格'){
+    const n=4, s=w/n;
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+      if((i+j)%2===0){ c.fillStyle=gold; c.fillRect(i*s,j*s,s,s); }
+    }
+  } else if(name==='型号字样'){
+    c.font = 'bold 130px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle = light; c.fillText('911', w/2, h/2);
+  }
+}
 
 /* ==================== UI 渲染 ==================== */
 const checklistEl = document.getElementById('checklist');
