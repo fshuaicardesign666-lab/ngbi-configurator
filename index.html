@@ -5,25 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>NGBI · 高定委托数字旅程</title>
 <style>
-  :root{ --bg:#0A100D; --panel:rgba(16,18,15,.72); --panel2:#141811; --line:rgba(255,255,255,.1); --ink:#F3F1EC; --muted:#979C93; --accent:#7FA08A; --accent2:#B9A6D6; --purple:#8B6BB5; --gold:#C3B091; --ok:#8FD0B0; --warn:#E8B08A; --danger:#E89090; }
+  :root{ --bg:#071A17; --bg2:#0B211C; --card:#102D26; --card2:#15372E; --line:rgba(211,186,240,.2); --ink:#D6B8F5; --ink-strong:#C59AEF; --white:#F2EDF7; --muted:#A9A3B1; --accent:#C59AEF; --accent2:#D6B8F5; --purple:#C59AEF; --gold:#BBA66F; --ok:#8FD0B0; --warn:#E8B08A; --danger:#E89090; }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
-  body{font-family:"Microsoft YaHei","微软雅黑",-apple-system,sans-serif;font-weight:300;letter-spacing:.03em;color:var(--ink);}
+  body{font-family:"Inter","Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;font-weight:300;letter-spacing:.025em;color:var(--ink);
+    background-image:radial-gradient(ellipse at 75% 3%, rgba(65,104,82,.18), transparent 37%), linear-gradient(145deg,#071A17,#0A211B 58%,#081914)!important;}
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(1000px 600px at 12% -8%, rgba(127,160,138,.15), transparent 60%),
-               radial-gradient(900px 560px at 88% 108%, rgba(139,107,181,.18), transparent 60%),
-               radial-gradient(500px 340px at 70% 18%, rgba(195,176,145,.06), transparent 60%);}
+    background:radial-gradient(900px 560px at 88% 108%, rgba(139,107,181,.14), transparent 60%);}
   button{font-family:inherit;cursor:pointer;}
   .app{display:flex;flex-direction:column;height:100%;position:relative;z-index:1;}
-  .nav{display:flex;align-items:center;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(10,16,13,.75);backdrop-filter:blur(18px);flex:0 0 auto;overflow-x:auto;}
+  .nav{display:flex;align-items:center;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(7,26,23,.91);backdrop-filter:blur(20px);flex:0 0 auto;overflow-x:auto;}
   .nav .brand{display:flex;align-items:center;gap:8px;margin-right:12px;flex:0 0 auto;}
-  .enso{width:22px;height:22px;border:1.5px solid var(--accent2);border-radius:50%;box-shadow:0 0 14px rgba(185,166,214,.25);}
+  .enso{width:22px;height:22px;border:1.5px solid var(--ink);border-radius:50%;background:linear-gradient(140deg,#D6B8F5,#8C6AB1);box-shadow:0 0 28px rgba(197,154,239,.25);}
   .brand .t{font-size:13px;font-weight:300;letter-spacing:.28em;}
   .brand .t span{color:var(--accent2);}
   .nav .tabs{display:flex;gap:4px;}
   .tab{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:300;color:var(--muted);letter-spacing:.1em;white-space:nowrap;transition:all .3s cubic-bezier(.22,.61,.36,1);border:1px solid transparent;}
   .tab:hover{color:var(--ink);transform:translateY(-1px);}
-  .tab.on{background:rgba(127,160,138,.16);color:var(--ink);border-color:rgba(127,160,138,.4);box-shadow:0 0 16px rgba(127,160,138,.12);}
+  .tab.on{background:rgba(197,154,239,.13);color:var(--ink);border-color:rgba(197,154,239,.3);}
   .main{flex:1;overflow-y:auto;padding:20px;max-width:860px;margin:0 auto;width:100%;}
   .head{margin-bottom:20px;}
   .head .tag{font-size:9px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;}
@@ -40,11 +39,11 @@
   .flow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
   .step{font-size:11px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;display:flex;align-items:center;gap:5px;}
   .step.done{background:rgba(143,208,176,.1);color:var(--ok);border-color:rgba(143,208,176,.3);}
-  .step.cur{background:rgba(127,160,138,.14);color:var(--ink);border-color:rgba(127,160,138,.4);}
+  .step.cur{background:rgba(197,154,239,.13);color:var(--ink);border-color:rgba(197,154,239,.3);}
   .step.rev{background:rgba(232,144,144,.1);color:var(--danger);border-color:rgba(232,144,144,.3);}
   .step .ar{color:var(--muted);opacity:.5;}
-  .btn{display:inline-block;background:linear-gradient(135deg,#8B6BB5,#5E4585);color:#fff;border:none;border-radius:999px;padding:11px 22px;font-size:12px;font-weight:300;letter-spacing:.14em;margin-right:8px;margin-bottom:8px;box-shadow:0 4px 18px rgba(139,107,181,.3),0 0 36px rgba(195,176,145,.08);transition:all .3s cubic-bezier(.22,.61,.36,1);}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(139,107,181,.45),0 0 46px rgba(195,176,145,.16);}
+  .btn{display:inline-block;background:linear-gradient(130deg,#B999DF,#8E6AB6);color:#10231D;border:1px solid rgba(216,190,244,.65);border-radius:999px;padding:11px 22px;font-size:12px;font-weight:550;letter-spacing:.04em;margin-right:8px;margin-bottom:8px;box-shadow:0 8px 24px rgba(154,111,194,.14);transition:transform .22s ease,filter .22s ease,box-shadow .22s ease;}
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 12px 28px rgba(172,133,210,.24);}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);box-shadow:none;}
   .btn.sm{padding:8px 15px;font-size:11px;}
   .btn:disabled{opacity:.4;cursor:not-allowed;}
@@ -74,9 +73,16 @@
   .dream .opts{display:flex;flex-wrap:wrap;gap:6px;}
   .dream .opt{font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:all .2s;}
   .dream .opt:hover{color:var(--ink);border-color:var(--accent);}
-  .dream .opt.on{background:var(--accent);color:#0A100D;border-color:var(--accent);}
+  .dream .opt.on{background:var(--ink-strong);color:#10231D;border-color:var(--ink-strong);}
   .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:99;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;max-width:86vw;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes luxEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+  .main>*{animation:luxEnter .5s cubic-bezier(.2,.7,.2,1) both}
+  .card{animation:luxEnter .5s cubic-bezier(.2,.7,.2,1) both}
+  .card:nth-child(2){animation-delay:.05s}
+  .card:nth-child(3){animation-delay:.1s}
+  .card:nth-child(4){animation-delay:.15s}
+  .card:nth-child(5){animation-delay:.2s}
 </style>
 </head>
 <body>
