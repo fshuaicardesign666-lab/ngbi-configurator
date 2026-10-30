@@ -3,83 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NGBI · 五端定制系统</title>
+<title>NGBI · 高定委托数字旅程</title>
 <style>
-  :root{ --bg:#0A0A0F; --panel:#16121e; --panel2:#1A1622; --line:rgba(255,255,255,.09); --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0; --gold:#C8A96E; --ok:#6FE0B0; --warn:#ff9e6d; }
+  :root{ --bg:#0A100D; --panel:rgba(16,18,15,.72); --panel2:#141811; --line:rgba(255,255,255,.1); --ink:#F3F1EC; --muted:#979C93; --accent:#7FA08A; --accent2:#B9A6D6; --purple:#8B6BB5; --gold:#C3B091; --ok:#8FD0B0; --warn:#E8B08A; --danger:#E89090; }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
-  body{font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;color:var(--ink);}
+  body{font-family:"Microsoft YaHei","微软雅黑",-apple-system,sans-serif;font-weight:300;letter-spacing:.03em;color:var(--ink);}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(1000px 600px at 12% -8%, rgba(127,160,138,.15), transparent 60%),
+               radial-gradient(900px 560px at 88% 108%, rgba(139,107,181,.18), transparent 60%),
+               radial-gradient(500px 340px at 70% 18%, rgba(195,176,145,.06), transparent 60%);}
   button{font-family:inherit;cursor:pointer;}
-
-  .app{display:flex;flex-direction:column;height:100%;}
-  /* 顶部导航 */
-  .nav{display:flex;align-items:center;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto;overflow-x:auto;}
+  .app{display:flex;flex-direction:column;height:100%;position:relative;z-index:1;}
+  .nav{display:flex;align-items:center;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(10,16,13,.75);backdrop-filter:blur(18px);flex:0 0 auto;overflow-x:auto;}
   .nav .brand{display:flex;align-items:center;gap:8px;margin-right:12px;flex:0 0 auto;}
-  .enso{width:22px;height:22px;border:2px solid var(--accent2);border-radius:50%;}
-  .brand .t{font-size:13px;font-weight:700;letter-spacing:.16em;}
+  .enso{width:22px;height:22px;border:1.5px solid var(--accent2);border-radius:50%;box-shadow:0 0 14px rgba(185,166,214,.25);}
+  .brand .t{font-size:13px;font-weight:300;letter-spacing:.28em;}
   .brand .t span{color:var(--accent2);}
   .nav .tabs{display:flex;gap:4px;}
-  .tab{padding:8px 14px;border-radius:10px;font-size:12px;color:var(--muted);letter-spacing:.06em;white-space:nowrap;transition:all .15s;border:1px solid transparent;}
-  .tab:hover{color:var(--ink);}
-  .tab.on{background:rgba(107,63,160,.25);color:var(--ink);border-color:var(--accent2);}
-
-  /* 内容区 */
-  .main{flex:1;overflow-y:auto;padding:20px;}
-
-  .head{margin-bottom:18px;}
-  .head .tag{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;}
-  .head h1{font-size:22px;font-weight:700;letter-spacing:.04em;margin:4px 0 6px;}
-  .head .sub{font-size:12px;color:var(--muted);line-height:1.6;}
-
-  .card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;}
-  .card h3{font-size:13px;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .tab{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:300;color:var(--muted);letter-spacing:.1em;white-space:nowrap;transition:all .3s cubic-bezier(.22,.61,.36,1);border:1px solid transparent;}
+  .tab:hover{color:var(--ink);transform:translateY(-1px);}
+  .tab.on{background:rgba(127,160,138,.16);color:var(--ink);border-color:rgba(127,160,138,.4);box-shadow:0 0 16px rgba(127,160,138,.12);}
+  .main{flex:1;overflow-y:auto;padding:20px;max-width:860px;margin:0 auto;width:100%;}
+  .head{margin-bottom:20px;}
+  .head .tag{font-size:9px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;}
+  .head h1{font-size:23px;font-weight:300;letter-spacing:.06em;margin:5px 0 6px;}
+  .head .sub{font-size:12px;color:var(--muted);line-height:1.7;}
+  .card{background:rgba(20,24,17,.55);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px;}
+  .card h3{font-size:13px;font-weight:300;letter-spacing:.12em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
   .card h3 .ic{font-size:15px;}
-
-  .badge{display:inline-block;font-size:9px;padding:3px 9px;border-radius:8px;letter-spacing:.08em;margin-left:8px;}
-  .badge.stage{background:rgba(107,63,160,.25);color:var(--accent2);}
-  .badge.demo{background:rgba(200,169,110,.18);color:var(--gold);}
-
-  /* 梦境五幕 */
-  .dreams{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
-  .dream{border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:all .15s;background:var(--panel);}
-  .dream:hover{border-color:var(--accent2);}
-  .dream.on{border-color:var(--accent2);background:rgba(107,63,160,.18);}
-  .dream .q{font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.06em;}
-  .dream .opts{display:flex;flex-wrap:wrap;gap:6px;}
-  .dream .opt{font-size:11px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:all .12s;}
-  .dream .opt:hover{color:var(--ink);}
-  .dream .opt.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-
-  /* 部件清单 */
-  .part{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05);}
-  .part:last-child{border-bottom:none;}
-  .part .ck{width:18px;height:18px;border:1px solid var(--line);border-radius:5px;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent2);}
-  .part .ck.on{background:var(--accent);border-color:var(--accent);}
-  .part .nm{flex:1;font-size:12px;}
-  .part .nm small{display:block;font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px;}
-  .part .wk{font-size:10px;color:var(--muted);text-align:right;flex:0 0 auto;}
-  .part .wk b{display:block;color:var(--gold);font-size:11px;font-weight:600;}
-
-  /* 状态流 */
+  .badge{display:inline-block;font-size:9px;padding:3px 10px;border-radius:999px;letter-spacing:.1em;margin-left:8px;font-weight:300;}
+  .badge.stage{background:rgba(127,160,138,.16);color:var(--accent);}
+  .badge.demo{background:rgba(195,176,145,.14);color:var(--gold);}
+  .badge.done{background:rgba(143,208,176,.1);color:var(--ok);}
+  .badge.warn{background:rgba(232,176,138,.12);color:var(--warn);}
   .flow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-  .step{font-size:11px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;}
-  .step.done{background:rgba(111,224,176,.12);color:var(--ok);border-color:rgba(111,224,176,.3);}
-  .step.cur{background:rgba(107,63,160,.25);color:var(--ink);border-color:var(--accent2);}
-  .step .ar{margin:0 2px;color:var(--muted);}
-
-  .btn{display:inline-block;background:linear-gradient(135deg,#6B3FA0,#4A2A78);color:#fff;border:none;border-radius:11px;padding:11px 20px;font-size:12px;font-weight:600;letter-spacing:.06em;margin-right:8px;box-shadow:0 4px 18px rgba(107,63,160,.35);}
+  .step{font-size:11px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;display:flex;align-items:center;gap:5px;}
+  .step.done{background:rgba(143,208,176,.1);color:var(--ok);border-color:rgba(143,208,176,.3);}
+  .step.cur{background:rgba(127,160,138,.14);color:var(--ink);border-color:rgba(127,160,138,.4);}
+  .step.rev{background:rgba(232,144,144,.1);color:var(--danger);border-color:rgba(232,144,144,.3);}
+  .step .ar{color:var(--muted);opacity:.5;}
+  .btn{display:inline-block;background:linear-gradient(135deg,#8B6BB5,#5E4585);color:#fff;border:none;border-radius:999px;padding:11px 22px;font-size:12px;font-weight:300;letter-spacing:.14em;margin-right:8px;margin-bottom:8px;box-shadow:0 4px 18px rgba(139,107,181,.3),0 0 36px rgba(195,176,145,.08);transition:all .3s cubic-bezier(.22,.61,.36,1);}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(139,107,181,.45),0 0 46px rgba(195,176,145,.16);}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);box-shadow:none;}
-  .btn.sm{padding:8px 14px;font-size:11px;}
-
-  .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+  .btn.sm{padding:8px 15px;font-size:11px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:12px;}
   .row:last-child{border-bottom:none;}
-  .row .k{color:var(--muted);}
-  .row .v{color:var(--ink);font-weight:600;}
+  .row .k{color:var(--muted);flex:0 0 auto;}
+  .row .v{color:var(--ink);font-weight:400;text-align:right;}
   .row .v.gold{color:var(--gold);}
-  .note{font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:10px;border-left:2px solid var(--gold);}
-  .note b{color:var(--gold);}
-
-  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:99;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;}
+  .row .v.muted{color:var(--muted);}
+  .note{font-size:10px;color:var(--muted);line-height:1.8;margin-top:10px;padding:11px 13px;background:rgba(255,255,255,.03);border-radius:12px;border-left:2px solid var(--accent);}
+  .note b{color:var(--accent);font-weight:400;}
+  .note.warn{border-left-color:var(--warn);}
+  .note.warn b{color:var(--warn);}
+  .part{display:flex;align-items:flex-start;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .part:last-child{border-bottom:none;}
+  .part .nm{flex:1;font-size:12px;}
+  .part .nm small{display:block;font-size:9px;color:var(--muted);letter-spacing:.04em;margin-top:2px;line-height:1.5;}
+  .part .wk{font-size:10px;color:var(--muted);text-align:right;flex:0 0 auto;line-height:1.6;}
+  .part .wk b{display:block;color:var(--gold);font-size:11px;font-weight:400;}
+  .hist{font-size:10px;color:var(--muted);padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px;align-items:baseline;}
+  .hist:last-child{border-bottom:none;}
+  .hist .who{color:var(--accent2);flex:0 0 auto;}
+  .hist .act{flex:1;}
+  .dreams{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .dream{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(20,24,17,.4);}
+  .dream .q{font-size:10px;color:var(--muted);margin-bottom:9px;letter-spacing:.06em;}
+  .dream .opts{display:flex;flex-wrap:wrap;gap:6px;}
+  .dream .opt{font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:all .2s;}
+  .dream .opt:hover{color:var(--ink);border-color:var(--accent);}
+  .dream .opt.on{background:var(--accent);color:#0A100D;border-color:var(--accent);}
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:99;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;max-width:86vw;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
@@ -94,33 +90,31 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ==================== 数据模型（localStorage） ==================== */
-const LS_KEY = 'ngbi.demo.v1';
+const LS_KEY = 'ngbi.demo.v2';
 const PARTS = [
-  // 外饰
-  {id:'paint', grp:'外饰', name:'车身漆面', baseMin:4, baseMax:6, buf:2, cost:28800, focus:'冻结颜色/漆面目标；色板和光泽复核。'},
-  {id:'coachline', grp:'外饰', name:'Coachline 图形线', baseMin:2, baseMax:3, buf:1, cost:6800, focus:'确认线条路径和公差；制作手绘/印刷样片。'},
-  {id:'hood', grp:'外饰', name:'引擎盖图案', baseMin:3, baseMax:5, buf:1, cost:9500, focus:'锁定图案文件和定位；确认表面兼容并打样。'},
-  {id:'trunk', grp:'外饰', name:'尾箱/行李厢图案', baseMin:3, baseMax:5, buf:1, cost:8200, focus:'确认图案与开合边界；打样检查耐候和附着。'},
-  {id:'wheel', grp:'外饰', name:'轮圈与中心盖', baseMin:4, baseMax:6, buf:2, cost:18600, focus:'冻结几何/表面/接口；供应链、载荷和样件评审。'},
-  {id:'headlight', grp:'外饰', name:'前灯与灯眉', baseMin:6, baseMax:10, buf:2, cost:12800, focus:'确认光学/法规/接口；完成光导、配光、装配复核。'},
-  {id:'taillight', grp:'外饰', name:'尾灯与灯带', baseMin:6, baseMax:10, buf:2, cost:11600, focus:'确认几何、色彩和密封；完成样件与耐久评审。'},
-  {id:'tread', grp:'外饰', name:'迎宾踏板 Tread plates', baseMin:3, baseMax:5, buf:1, cost:5200, focus:'冻结尺寸/标识/表面；蚀刻或加工样件触感复核。'},
-  {id:'smalldetail', grp:'外饰', name:'外部小件细节', baseMin:3, baseMax:6, buf:2, cost:4600, focus:'明确小件、接口和公差；工艺样件与装配检查。'},
-  // 座舱
-  {id:'leather', grp:'座舱', name:'皮革与软包', baseMin:4, baseMax:6, buf:2, cost:36800, focus:'确认皮料/颜色/批次；裁片、包覆和触感评审。'},
-  {id:'quilt', grp:'座舱', name:'座椅纹理与绗缝', baseMin:3, baseMax:5, buf:2, cost:12800, focus:'冻结纹理/针距/区域；压纹、打孔和缝线复核。'},
-  {id:'embroidery', grp:'座舱', name:'头枕刺绣', baseMin:2, baseMax:4, buf:1, cost:3200, focus:'客户确认图稿/尺寸/位置；针法与线色样片签核。'},
-  {id:'doorpanel', grp:'座舱', name:'门板与门饰板', baseMin:5, baseMax:8, buf:2, cost:16800, focus:'确认分区/材料/装饰边界；包覆或 CNC 样件检查。'},
-  {id:'frontseatback', grp:'座舱', name:'前排座椅背板', baseMin:4, baseMax:7, buf:2, cost:9800, focus:'冻结造型/收纳/触点；结构和表面样件装配验证。'},
-  {id:'rearseatback', grp:'座舱', name:'后排座椅背板', baseMin:4, baseMax:7, buf:2, cost:8600, focus:'确认造型/场景；样件评审维护和装配边界。'},
-  {id:'fascia', grp:'座舱', name:'仪表台 IP fascia', baseMin:6, baseMax:9, buf:3, cost:15800, focus:'冻结饰面/图案/接口；样件与工程复核。'},
-  {id:'starlight', grp:'座舱', name:'星空顶', baseMin:5, baseMax:8, buf:2, cost:22800, focus:'确认顶篷材料/星图/布点；光纤或微孔样片检查。'},
-  {id:'metal', grp:'座舱', name:'金属饰件', baseMin:4, baseMax:6, buf:2, cost:7800, focus:'冻结金属牌号/滚花/表面；CNC 或打印试样复核。'},
-  {id:'steering', grp:'座舱', name:'方向盘', baseMin:3, baseMax:5, buf:1, cost:7200, focus:'确认握持区/缝线/材料；包覆和人机触感复核。'},
+  {id:'paint', grp:'外饰', name:'车身漆面', baseMin:4, baseMax:6, buf:2, cost:28800, deps:[], support:'model'},
+  {id:'coachline', grp:'外饰', name:'Coachline 图形线', baseMin:2, baseMax:3, buf:1, cost:6800, deps:['paint'], support:'model'},
+  {id:'hood', grp:'外饰', name:'引擎盖图案', baseMin:3, baseMax:5, buf:1, cost:9500, deps:['paint'], support:'model'},
+  {id:'trunk', grp:'外饰', name:'尾箱/行李厢图案', baseMin:3, baseMax:5, buf:1, cost:8200, deps:['paint'], support:'model'},
+  {id:'wheel', grp:'外饰', name:'轮圈与中心盖', baseMin:4, baseMax:6, buf:2, cost:18600, deps:[], support:'model'},
+  {id:'headlight', grp:'外饰', name:'前灯与灯眉', baseMin:6, baseMax:10, buf:2, cost:12800, deps:[], support:'model'},
+  {id:'taillight', grp:'外饰', name:'尾灯与灯带', baseMin:6, baseMax:10, buf:2, cost:11600, deps:[], support:'model'},
+  {id:'tread', grp:'外饰', name:'迎宾踏板', baseMin:3, baseMax:5, buf:1, cost:5200, deps:['leather'], support:'concept'},
+  {id:'smalldetail', grp:'外饰', name:'外部小件细节', baseMin:3, baseMax:6, buf:2, cost:4600, deps:[], support:'concept'},
+  {id:'leather', grp:'座舱', name:'皮革与软包', baseMin:4, baseMax:6, buf:2, cost:36800, deps:['paint'], support:'concept'},
+  {id:'quilt', grp:'座舱', name:'座椅纹理与绗缝', baseMin:3, baseMax:5, buf:2, cost:12800, deps:['leather'], support:'concept'},
+  {id:'embroidery', grp:'座舱', name:'头枕刺绣', baseMin:2, baseMax:4, buf:1, cost:3200, deps:['leather'], support:'concept'},
+  {id:'doorpanel', grp:'座舱', name:'门板与门饰板', baseMin:5, baseMax:8, buf:2, cost:16800, deps:['leather'], support:'concept'},
+  {id:'frontseatback', grp:'座舱', name:'前排座椅背板', baseMin:4, baseMax:7, buf:2, cost:9800, deps:['leather'], support:'concept'},
+  {id:'rearseatback', grp:'座舱', name:'后排座椅背板', baseMin:4, baseMax:7, buf:2, cost:8600, deps:['leather'], support:'concept'},
+  {id:'fascia', grp:'座舱', name:'仪表台 IP fascia', baseMin:6, baseMax:9, buf:3, cost:15800, deps:['leather'], support:'concept'},
+  {id:'starlight', grp:'座舱', name:'星空顶', baseMin:5, baseMax:8, buf:2, cost:22800, deps:['paint'], support:'concept'},
+  {id:'metal', grp:'座舱', name:'金属饰件', baseMin:4, baseMax:6, buf:2, cost:7800, deps:[], support:'concept'},
+  {id:'steering', grp:'座舱', name:'方向盘', baseMin:3, baseMax:5, buf:1, cost:7200, deps:['leather'], support:'concept'},
 ];
 const STAGES = ['draft','muse-review','forge-review','sales-review','awaiting-client','accepted'];
-const STAGE_LABEL = { 'draft':'初步估算','muse-review':'MUSE 拆解','forge-review':'FORGE 双审','sales-review':'销售确认','awaiting-client':'待客户确认','accepted':'已确认' };
+const STAGE_LABEL = { 'draft':'初步探索','muse-review':'MUSE 拆解','forge-review':'FORGE 双审','sales-review':'销售确认','awaiting-client':'待客户确认','accepted':'已确认订单' };
+const QUOTE_STATUS = { none:'未生成', rough:'初步区间', ready:'最终区间', accepted:'客户已接受', confirmed:'正式订单' };
 const DREAMS = [
   {id:'planet', q:'你想从哪一种世界醒来？', opts:['绒雾星','月白星','玄岩星']},
   {id:'home', q:'一个让你愿意停留的所在。', opts:['隐入花园','向光而开','珍藏之室']},
@@ -130,244 +124,191 @@ const DREAMS = [
 ];
 const TOUCHPOINTS = ['欢迎礼','设计共创','材料会谈','可行性评审','匠造日记','揭幕预约','交付仪式','长期关系'];
 
-/* ==================== store ==================== */
 function defaultState(){
   const parts = {};
-  PARTS.forEach(p=>{ parts[p.id] = { included:false, material:'', color:'', finish:'', shape:'', process:'', note:'' }; });
-  return {
-    profile: { alias:'', choices:{} },
-    commission: {
-      vehicle:'porsche',
-      parts,
-      quote: { status:'none', min:128000, max:198000, currency:'CNY', packageName:'Porsche 样例' },
-      workflow: { stage:'draft' },
-    },
-    events: [],
-  };
-}
-function load(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const d = JSON.parse(raw); return deepMerge(defaultState(), d); } }catch(e){}
-  return defaultState();
+  PARTS.forEach(p=>{ parts[p.id] = { included:false, material:'', color:null, shape:'', process:'', note:'', actualDays:null }; });
+  return { schema:2, projectId:'NGBI-0001', createdAt:new Date().toISOString(), client:{alias:'',choices:{}}, configRevisions:[], workflow:{stage:'draft',history:[]}, parts, quote:{status:'none',rough:null,ready:null,internal:{}}, events:[] };
 }
 function deepMerge(base, cur){
   const out = Array.isArray(base)? [...base] : {...base};
   for(const k in cur){
-    if(cur[k] && typeof cur[k]==='object' && !Array.isArray(cur[k]) && base[k] && typeof base[k]==='object'){
-      out[k] = deepMerge(base[k], cur[k]);
-    } else out[k] = cur[k];
+    if(cur[k] && typeof cur[k]==='object' && !Array.isArray(cur[k]) && base[k] && typeof base[k]==='object' && !Array.isArray(base[k])) out[k]=deepMerge(base[k],cur[k]);
+    else out[k]=cur[k];
   }
   return out;
 }
+function load(){ try{ const raw=localStorage.getItem(LS_KEY); if(raw) return deepMerge(defaultState(), JSON.parse(raw)); }catch(e){} return defaultState(); }
 function save(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
-function emit(s, type, detail){ s.events.push({type, detail, at: new Date().toISOString()}); save(s); }
-
+function log(s, type, detail){ s.events.push({type,detail,at:new Date().toISOString()}); save(s); }
 let S = load();
 if(!localStorage.getItem(LS_KEY)) save(S);
 
-/* ==================== 路由 ==================== */
-const PORTS = [
-  {id:'self', name:'SELF', sub:'客户端'},
-  {id:'muse', name:'MUSE', sub:'设计'},
-  {id:'forge', name:'FORGE', sub:'工程'},
-  {id:'dealer', name:'DEALER', sub:'销售'},
-  {id:'master', name:'MASTER', sub:'管理'},
-  {id:'nexus', name:'NEXUS', sub:'数据'},
-];
-function route(){ return (location.hash||'#/self').replace('#/','').split('/')[0] || 'self'; }
-function go(p){ location.hash = '#/'+p; }
+function hasSelected(){ return Object.values(S.parts).some(p=>p.included); }
+function hasMuseTasks(){ return S.workflow.museTasks && S.workflow.museTasks.length>0; }
+function forgeChecked(){ const c=S.workflow.forgeChecks||{}; return ['材料','重量','安全','售后','手艺','客户确认'].every(r=>c[r]); }
+function hasReady(){ return S.quote.status==='ready'; }
 
-/* ==================== 视图渲染 ==================== */
-const main = document.getElementById('main');
-function h(html){ return html; }
+function transition(by, action){
+  const cur = S.workflow.stage;
+  const t = { 'client':{draft:['muse-review','submit'],'awaiting-client':['accepted','accept']},
+              'designer':{'muse-review':['forge-review','muse-submit']},
+              'engineer':{'forge-review':['sales-review','forge-pass']},
+              'sales':{'sales-review':['awaiting-client','publish-ready'],'draft':['sales-review','publish-rough']} }[by] || {};
+  const target = t[cur];
+  if(!target) return {ok:false, msg:'当前角色不能在此状态操作'};
+  const deps = { 'submit':()=>hasSelected()?null:'请先至少勾选一个部件',
+                 'muse-submit':()=>hasMuseTasks()?null:'MUSE 尚未拆解任何任务',
+                 'forge-pass':()=>forgeChecked()?null:'FORGE 尚未完成可行性复核',
+                 'publish-ready':()=>hasReady()?null:'尚未生成 ready 最终区间',
+                 'accept':()=>hasReady()?null:'尚未有最终区间可接受' }[action];
+  if(deps){ const err=deps(); if(err) return {ok:false,msg:err}; }
+  const from=cur, to=target[0];
+  S.workflow.stage=to;
+  S.workflow.history.push({at:new Date().toISOString(),by,action,from,to});
+  log(S,'STAGE_TRANSITION',{by,action,from,to});
+  if(action==='accept') S.quote.status='accepted';
+  save(S);
+  return {ok:true, msg:from+' → '+to};
+}
+
+function snapshotConfig(note){
+  const parts={}; PARTS.forEach(p=>{ parts[p.id]=JSON.parse(JSON.stringify(S.parts[p.id])); });
+  const rev={revId:S.configRevisions.length+1, at:new Date().toISOString(), by:'client', note, parts};
+  S.configRevisions.push(rev);
+  log(S,'CONFIG_REVISION_CREATED',{revId:rev.revId,note}); save(S); return rev;
+}
+function currentRev(){ return S.configRevisions[S.configRevisions.length-1]; }
+function lastRevBeforeCurrent(){ return S.configRevisions[S.configRevisions.length-2]; }
+function diffImpact(){
+  const cur=currentRev(), prev=lastRevBeforeCurrent();
+  if(!cur) return [];
+  if(!prev) return PARTS.filter(p=>S.parts[p.id].included).map(p=>p.id);
+  const affected=[];
+  PARTS.forEach(p=>{ const a=cur.parts[p.id], b=prev.parts[p.id]||{}; if(a.included!==b.included||a.material!==b.material||a.color!==b.color||a.shape!==b.shape) affected.push(p.id); });
+  return affected;
+}
+
+function partWeeks(p){ return {min:p.baseMin+p.buf, max:p.baseMax+p.buf}; }
+function criticalPath(){
+  const selected = PARTS.filter(p=>S.parts[p.id].included);
+  if(!selected.length) return {weeks:null,path:[],covered:[],uncovered:[]};
+  const memo={};
+  function dur(p){ if(memo[p.id]) return memo[p.id]; const w=partWeeks(p).max; const dd=p.deps.filter(d=>S.parts[d]&&S.parts[d].included).map(d=>dur(PARTS.find(x=>x.id===d))); memo[p.id]=(dd.length?Math.max(...dd):0)+w; return memo[p.id]; }
+  let longest=0, longestPart=null;
+  selected.forEach(p=>{ const d=dur(p); if(d>longest){longest=d;longestPart=p;} });
+  const path=[longestPart.id]; let node=longestPart;
+  while(node && node.deps.length){ const dp=node.deps.filter(d=>S.parts[d]&&S.parts[d].included).map(d=>PARTS.find(x=>x.id===d)).sort((a,b)=>dur(b)-dur(a)); if(dp.length){node=dp[0];path.unshift(node.id);} else break; }
+  return {weeks:longest, path, covered:['基准周期','缓冲','依赖关系','关键路径'], uncovered:['采购','物流','排队','返工','资源冲突','供应商真实产能']};
+}
+function totalInternalCost(){ return PARTS.filter(p=>S.parts[p.id].included).reduce((s,p)=>s+p.cost,0); }
+
+const PORTS = [ {id:'self',name:'SELF',sub:'客户'},{id:'muse',name:'MUSE',sub:'设计'},{id:'forge',name:'FORGE',sub:'工程'},{id:'dealer',name:'DEALER',sub:'销售'},{id:'master',name:'MASTER',sub:'管理'},{id:'nexus',name:'NEXUS',sub:'数据'} ];
+function route(){ return (location.hash||'#/self').replace('#/','').split('/')[0]||'self'; }
+function go(p){ location.hash='#/'+p; }
+const main=document.getElementById('main');
 function render(){
-  const tabs = document.getElementById('tabs');
-  tabs.innerHTML = PORTS.map(p=>`<div class="tab ${p.id===route()?'on':''}" onclick="go('${p.id}')">${p.name}<span style="font-size:9px;opacity:.6;margin-left:3px">${p.sub}</span></div>`).join('');
-  const views = { self:viewSelf, muse:viewMuse, forge:viewForge, dealer:viewDealer, master:viewMaster, nexus:viewNexus };
-  main.innerHTML = views[route()]();
+  document.getElementById('tabs').innerHTML = PORTS.map(p=>`<div class="tab ${p.id===route()?'on':''}" onclick="go('${p.id}')">${p.name}<span style="font-size:9px;opacity:.6;margin-left:3px">${p.sub}</span></div>`).join('');
+  const views={self:viewSelf,muse:viewMuse,forge:viewForge,dealer:viewDealer,master:viewMaster,nexus:viewNexus};
+  main.innerHTML=views[route()]();
 }
+function stageFlow(){ const idx=STAGES.indexOf(S.workflow.stage); return `<div class="flow">${STAGES.map((st,i)=>{ const cls=i<idx?'done':(i===idx?'cur':''); return `<span class="step ${cls}">${STAGE_LABEL[st]}</span>${i<STAGES.length-1?'<span class="ar">→</span>':''}`;}).join('')}</div>`; }
 
-/* ---------- SELF ---------- */
 function viewSelf(){
-  const stage = S.commission.workflow.stage;
-  const selCount = Object.values(S.commission.parts).filter(p=>p.included).length;
-  const q = S.commission.quote;
-  return `
-  <div class="head">
-    <div class="tag">SELF · 客户端</div>
-    <h1>你的座驾，你来定义</h1>
-    <div class="sub">从梦境探索开始，玩 Configurator，提交创作方向，看套餐范围与旅程。</div>
-  </div>
-
-  <div class="card">
-    <h3><span class="ic">🌌</span> 01 · 梦境探索 <span class="badge demo">原型假设</span></h3>
-    <div class="dreams">
-      ${DREAMS.map(d=>`
-        <div class="dream">
-          <div class="q">${d.q}</div>
-          <div class="opts">${d.opts.map(o=>`<span class="opt ${S.profile.choices[d.id]===o?'on':''}" onclick="pickDream('${d.id}','${o}')">${o}</span>`).join('')}</div>
-        </div>`).join('')}
-    </div>
-    <div class="note">这些答案整理成灵感画像（宁静、亲密、记忆、手作…）。<b>不是心理测评</b>，不生成诊断或分数。</div>
-  </div>
-
-  <div class="card">
-    <h3><span class="ic">🎨</span> 02 · Configurator</h3>
-    <div class="row"><span class="k">已选部件</span><span class="v">${selCount} / 19</span></div>
-    <div class="row"><span class="k">车型</span><span class="v">Porsche 911 Carrera 4S</span></div>
-    <div style="margin-top:12px">
-      <button class="btn" onclick="location.href='configurator.html?mode=self'">打开 3D 定制器 →</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3><span class="ic">💰</span> 03 · 费用与时间 <span class="badge demo">样例数据</span></h3>
-    <div class="row"><span class="k">套餐范围</span><span class="v gold">${q.min.toLocaleString()} – ${q.max.toLocaleString()} ${q.currency}</span></div>
-    <div class="row"><span class="k">整体周期</span><span class="v">${overallWeeks()}</span></div>
-    <div class="row"><span class="k">评审状态</span><span class="v">${STAGE_LABEL[stage]}</span></div>
-    <div class="note">先表达可讨论范围；<b>不暴露单件成本</b>。所有数字仍是样例假设，非真实报价。</div>
-  </div>
-
-  <div class="card">
-    <h3><span class="ic">🗺️</span> 04 · 委托旅程</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${TOUCHPOINTS.map(t=>`<span class="step ${t==='欢迎礼'?'done':''}">${t}</span>`).join('')}
-    </div>
-    <div class="note">按真实计划逐步解锁；分享默认私密且由客户授权。</div>
-  </div>
-
+  const rev=currentRev(); const sel=PARTS.filter(p=>S.parts[p.id].included); const cp=criticalPath(); const impact=diffImpact(); const q=S.quote;
+  const clientQuote = (q.status==='ready'||q.status==='accepted')?q.ready:(q.status==='rough'?q.rough:null);
+  return `<div class="head"><div class="tag">SELF · 客户端</div><h1>你的座驾，你来定义</h1><div class="sub">探索 → 配置 → 保存版本 → 提交给团队。每一步都有反馈，状态始终一致。</div></div>
+  ${stageFlow()}
+  <div class="card"><h3><span class="ic">🌌</span> 探索与表达 <span class="badge demo">创意启发</span></h3>
+    <div class="dreams">${DREAMS.map(d=>`<div class="dream"><div class="q">${d.q}</div><div class="opts">${d.opts.map(o=>`<span class="opt ${S.client.choices[d.id]===o?'on':''}" onclick="pickDream('${d.id}','${o}')">${o}</span>`).join('')}</div></div>`).join('')}</div>
+    <div class="note">这些是<b>创意启发与偏好表达</b>，不是心理测评，不诊断、不贴标签、不作自动决策。</div></div>
+  <div class="card"><h3><span class="ic">🎨</span> Configurator</h3>
+    <div class="row"><span class="k">已选部件</span><span class="v">${sel.length} / ${PARTS.length}</span></div>
+    <div class="row"><span class="k">当前配置版本</span><span class="v">${rev? 'v'+rev.revId+' · '+(rev.at||'').slice(0,16).replace('T',' ') : '尚未保存'}</span></div>
+    <div style="margin-top:12px"><button class="btn" onclick="location.href='configurator.html?mode=self'">打开 3D 定制器</button><button class="btn ghost" onclick="saveVersion()">保存当前配置为版本</button></div>
+    ${impact.length && S.configRevisions.length>1 ? `<div class="note warn">配置已变更，以下部件需重新评估：<b>${impact.map(id=>PARTS.find(p=>p.id===id).name).join('、')}</b>（报价/任务/交期/审核）</div>` : ''}</div>
+  <div class="card"><h3><span class="ic">💰</span> 费用与时间 ${clientQuote?`<span class="badge stage">${QUOTE_STATUS[q.status]}</span>`:''}</h3>
+    ${clientQuote?`<div class="row"><span class="k">套餐范围</span><span class="v gold">${clientQuote.min.toLocaleString()} – ${clientQuote.max.toLocaleString()} ${clientQuote.currency||'CNY'}</span></div><div class="row"><span class="k">假设与有效期</span><span class="v muted">${clientQuote.assumptions||'—'}</span></div>`:`<div class="row"><span class="k">套餐范围</span><span class="v muted">尚未发布（团队评估中）</span></div>`}
+    <div class="row"><span class="k">整体周期（关键路径）</span><span class="v">${cp.weeks?cp.weeks+' 周':'未选部件'}</span></div>
+    <div class="note">周期基于<b>关键路径</b>估算。已覆盖：${cp.covered.join('、')}。<b>未覆盖</b>：${cp.uncovered.join('、')}。当前是<b>原型估算</b>，非承诺交期。</div></div>
+  <div class="card"><h3><span class="ic">🗺️</span> 委托旅程</h3><div class="flow">${TOUCHPOINTS.map((t,i)=>`<span class="step ${i===0?'done':''}">${t}</span>`).join('')}</div><div class="note">按真实计划逐步解锁；分享默认私密且由客户授权。</div></div>
   <div style="margin-top:6px">
-    <button class="btn" onclick="submitBrief()">提交创作方向 →</button>
-    <span class="badge stage">当前 ${STAGE_LABEL[stage]}</span>
-  </div>`;
+    ${S.workflow.stage==='draft'?`<button class="btn" onclick="submitBrief()">提交创作方向 →</button>`:''}
+    ${S.workflow.stage==='awaiting-client'?`<button class="btn" onclick="acceptQuote()">接受最终方案 ✓</button>`:''}</div>`;
 }
 
-/* ---------- MUSE ---------- */
 function viewMuse(){
-  const parts = PARTS.filter(p=>S.commission.parts[p.id].included);
-  return `
-  <div class="head"><div class="tag">MUSE · 设计端</div><h1>逐件任务与设计拆解</h1><div class="sub">读取客户草稿，共创设计方向，按部件拆任务/周期，回传提案。</div></div>
-  <div class="card">
-    <h3><span class="ic">📋</span> 入选部件任务（${parts.length} 件）</h3>
-    ${parts.length===0 ? '<div class="note">客户尚未勾选任何部件。先去 SELF → Configurator 勾选。</div>' :
-      parts.map(p=>`
-      <div class="part">
-        <div class="nm">${p.name}<small>${p.focus}</small></div>
-        <div class="wk">${p.baseMin+buf(p)}–${p.baseMax+buf(p)} 周<b>${p.cost.toLocaleString()} ¥</b></div>
-      </div>`).join('')}
-  </div>
-  <div class="card">
-    <h3><span class="ic">🧵</span> 整体周期</h3>
-    <div class="row"><span class="k">最短</span><span class="v">${overallMin()} 周</span></div>
-    <div class="row"><span class="k">最长</span><span class="v">${overallMax()} 周</span></div>
-    <div class="note">并行关键路径粗估；非排产器，未计采购/物流/排队/返工。</div>
-  </div>
-  <button class="btn" onclick="museSubmit()">提交 MUSE 工作包 →</button>`;
+  const rev=currentRev(); const tasks=S.workflow.museTasks||[];
+  return `<div class="head"><div class="tag">MUSE · 设计端</div><h1>共创工作台 · 接收配置版本并拆解</h1><div class="sub">接收 SELF 的配置版本与客户线索，逐件拆任务、设计决策、待确认问题、周期与交付物。</div></div>
+  ${stageFlow()}
+  <div class="card"><h3><span class="ic">📦</span> 接收的配置版本 ${rev?`<span class="badge stage">v${rev.revId}</span>`:''}</h3>
+    ${rev?`<div class="row"><span class="k">版本</span><span class="v">v${rev.revId} · ${rev.by}</span></div><div class="row"><span class="k">已选部件</span><span class="v">${PARTS.filter(p=>rev.parts[p.id]&&rev.parts[p.id].included).length} 件</span></div>`:'<div class="note">客户尚未保存配置版本。</div>'}</div>
+  <div class="card"><h3><span class="ic">🧵</span> 逐件任务拆解（${tasks.length} 个任务）</h3>
+    ${PARTS.filter(p=>S.parts[p.id].included).map(p=>{ const t=tasks.find(x=>x.part===p.id); const cp=partWeeks(p); return `<div class="part"><div class="nm">${p.name}<small>${t?t.deliverable:'点击下方「拆解任务」生成设计任务与交付物'}</small></div><div class="wk">${cp.min}–${cp.max} 周${t?`<b>已拆解</b>`:''}</div></div>`;}).join('') || '<div class="note">无入选部件。等待客户在 Configurator 勾选。</div>'}</div>
+  <div class="card"><h3><span class="ic">✨</span> AI 共创建议 <span class="badge demo">人审后采纳</span></h3><div class="note">AI 仅提供<b>有依据的草案</b>（依据客户明确的偏好与配置），由设计师/负责人审核采纳。输出可解释、可修改、可拒绝。</div></div>
+  <button class="btn" onclick="museDecompose()" ${!hasSelected()?'disabled':''}>拆解任务</button>
+  <button class="btn ghost" onclick="museSubmit()" ${!hasMuseTasks()?'disabled':''}>提交 MUSE 工作包 →</button>`;
 }
 
-/* ---------- FORGE ---------- */
 function viewForge(){
-  const checks = S.commission.forgeChecks || {};
-  return `
-  <div class="head"><div class="tag">FORGE · 工程端</div><h1>可行性、工艺与成本双审</h1><div class="sub">工程可行性、工序与能力路线、逐件周期/成本复核、质量证据。</div></div>
-  <div class="card">
-    <h3><span class="ic">🔬</span> 可行性预审清单</h3>
-    ${['材料','重量','安全','售后','手艺','客户确认'].map((c,i)=>`
-      <div class="row"><span class="k">${c}</span><span class="v" style="cursor:pointer" onclick="toggleCheck('forge',${i})">${checks[c]?'✓ 通过':'待审'}</span></div>`).join('')}
-  </div>
-  <div class="card">
-    <h3><span class="ic">🏭</span> Future Factory OS</h3>
-    <div class="note">长期架构蓝图：软件先行，硬件后接。Adapter 连接 CAD/PLM/ERP/MES/设备。<b>当前未接通真实工厂设备</b>。</div>
-  </div>
-  <button class="btn" onclick="forgePass()">FORGE 复核通过 →</button>`;
+  const checks=S.workflow.forgeChecks||{}; const risks=['材料','重量','安全','售后','手艺','客户确认'];
+  return `<div class="head"><div class="tag">FORGE · 工程端</div><h1>工艺 · 供应 · 可行性 · 成本周期复核</h1><div class="sub">所有风险、依赖、证据、审批都有记录。</div></div>
+  ${stageFlow()}
+  <div class="card"><h3><span class="ic">🔬</span> 可行性预审（${risks.filter(r=>checks[r]).length}/${risks.length} 通过）</h3>
+    ${risks.map(r=>`<div class="row"><span class="k">${r}</span><span class="v ${checks[r]?'gold':'muted'}" style="cursor:pointer" onclick="toggleForgeCheck('${r}')">${checks[r]?'✓ 通过':'待审'}</span></div>`).join('')}</div>
+  <div class="card"><h3><span class="ic">⏱️</span> 逐件周期与成本双审 <span class="badge demo">虚构 ratebook</span></h3>
+    ${PARTS.filter(p=>S.parts[p.id].included).map(p=>{ const w=partWeeks(p); return `<div class="row"><span class="k">${p.name}${p.deps.length?` <span style="color:var(--muted);font-size:9px">依赖 ${p.deps.join('/')}</span>`:''}</span><span class="v">${w.min}–${w.max}周 · ${p.cost.toLocaleString()}¥</span></div>`;}).join('')||'<div class="note">无入选部件。</div>'}
+    <div class="note warn">成本为<b>内部虚构 ratebook</b>，不代表采购成本或供应商报价。周期为原型估算。</div></div>
+  <div class="card"><h3><span class="ic">🏭</span> Future Factory <span class="badge demo">架构规划</span></h3><div class="note">软件先行、硬件后接。先打稳产品定义/配置版本/BOM/工艺能力/工作包/质量证据/Adapter 合同。<b>当前未接通真实工厂设备</b>，LLM 不控制安全回路。</div></div>
+  <button class="btn" onclick="forgePass()" ${risks.every(r=>checks[r])?'':'disabled'}>FORGE 复核通过 →</button>`;
 }
 
-/* ---------- DEALER ---------- */
 function viewDealer(){
-  const q = S.commission.quote;
-  return `
-  <div class="head"><div class="tag">DEALER · 销售端</div><h1>内部核价与套餐范围</h1><div class="sub">维护套餐范围、逐件内部成本和原型选项码。客户只看套餐级区间。</div></div>
-  <div class="card">
-    <h3><span class="ic">💼</span> 逐件内部成本 <span class="badge demo">虚构 ratebook</span></h3>
-    ${PARTS.filter(p=>S.commission.parts[p.id].included).map(p=>`
-      <div class="row"><span class="k">${p.name}</span><span class="v">${p.cost.toLocaleString()} ¥</span></div>`).join('') || '<div class="note">无入选部件。</div>'}
-    <div class="row"><span class="k">合计</span><span class="v gold">${totalCost().toLocaleString()} ¥</span></div>
-    <div class="note">最后一列为内部虚构 ratebook，<b>不代表采购成本或供应商报价</b>。</div>
-  </div>
-  <div class="card">
-    <h3><span class="ic">📦</span> 套餐范围</h3>
-    <div class="row"><span class="k">Rough（初步）</span><span class="v">88,000 – 158,000 CNY</span></div>
-    <div class="row"><span class="k">Ready（最终）</span><span class="v gold">${q.min.toLocaleString()} – ${q.max.toLocaleString()} CNY</span></div>
-  </div>
-  <button class="btn" onclick="publishRange()">发布最终套餐范围 →</button>`;
+  const q=S.quote; const internal=q.internal||{};
+  return `<div class="head"><div class="tag">DEALER · 销售端</div><h1>内部成本 ↔ 客户可见套餐</h1><div class="sub">内部按部件核成本与风险；客户只看到经审核的套餐区间、假设、有效期与下一步。</div></div>
+  ${stageFlow()}
+  <div class="card"><h3><span class="ic">💼</span> 内部成本（客户不可见）<span class="badge demo">虚构 ratebook</span></h3>
+    ${PARTS.filter(p=>S.parts[p.id].included).map(p=>`<div class="row"><span class="k">${p.name}</span><span class="v">${p.cost.toLocaleString()} ¥</span></div>`).join('')||'<div class="note">无入选部件。</div>'}
+    <div class="row"><span class="k">内部合计</span><span class="v gold">${totalInternalCost().toLocaleString()} ¥</span></div></div>
+  <div class="card"><h3><span class="ic">📦</span> 报价分层状态 <span class="badge stage">${QUOTE_STATUS[q.status]}</span></h3>
+    <div class="row"><span class="k">Rough 初步区间</span><span class="v">${q.rough?q.rough.min.toLocaleString()+' – '+q.rough.max.toLocaleString():'未发布'}</span></div>
+    <div class="row"><span class="k">Ready 最终区间</span><span class="v gold">${q.ready?q.ready.min.toLocaleString()+' – '+q.ready.max.toLocaleString():'未发布'}</span></div>
+    <div class="note">ROUGH / READY / 客户接受 / 正式订单是<b>不同状态</b>，客户只看已发布的套餐级区间。</div></div>
+  <button class="btn" onclick="publishRough()" ${q.status!=='none'?'disabled':''}>发布 Rough 初步区间</button>
+  <button class="btn" onclick="publishReady()" ${q.status!=='rough'?'disabled':''}>发布 Ready 最终区间 →</button>`;
 }
 
-/* ---------- MASTER ---------- */
 function viewMaster(){
-  return `
-  <div class="head"><div class="tag">MASTER · 管理端</div><h1>治理后的洞察</h1><div class="sub">查看聚合趋势和研究问题。</div></div>
-  <div class="card">
-    <h3><span class="ic">📊</span> 聚合趋势 <span class="badge demo">虚构数据</span></h3>
+  return `<div class="head"><div class="tag">MASTER · 管理端</div><h1>治理后的洞察</h1><div class="sub">只使用经授权、去身份化、最小化的聚合数据。</div></div>
+  <div class="card"><h3><span class="ic">📊</span> 聚合趋势 <span class="badge demo">虚构数据</span></h3>
     <div class="row"><span class="k">Cost of Individuality 趋势</span><span class="v gold">-12% (样本)</span></div>
     <div class="row"><span class="k">一次制造可行率</span><span class="v">82% (样本)</span></div>
-    <div class="row"><span class="k">复购意向</span><span class="v">高 (样本)</span></div>
-    <div class="note">当前图表样本是<b>虚构数据</b>；生产版只接收经授权、去身份化、满足最小化规则的数据。</div>
-  </div>`;
+    <div class="note">图表为<b>虚构数据</b>；生产版只接收经授权、去身份化、最小化的数据。</div></div>`;
 }
 
-/* ---------- NEXUS ---------- */
 function viewNexus(){
-  return `
-  <div class="head"><div class="tag">NEXUS · 数据端</div><h1>本机数据状态与事件</h1><div class="sub">维护共享事件、数据导出/删除、状态总览和未来集成契约。</div></div>
-  <div class="card">
-    <h3><span class="ic">🔗</span> 事件列表（${S.events.length}）</h3>
-    ${S.events.slice(-8).reverse().map(e=>`<div class="row"><span class="k">${e.type}</span><span class="v" style="font-weight:400;font-size:10px">${(e.at||'').slice(11,19)}</span></div>`).join('') || '<div class="note">暂无事件。</div>'}
-  </div>
-  <div class="card">
-    <h3><span class="ic">💾</span> 数据操作</h3>
-    <button class="btn sm" onclick="exportData()">导出体验 JSON</button>
-    <button class="btn sm ghost" onclick="clearData()">清除本机记录</button>
-    <div class="note">导出时删除内部 pricing；本机重置直接重建 state。</div>
-  </div>`;
+  return `<div class="head"><div class="tag">NEXUS · 数据端</div><h1>数据 · 状态 · 事件 · 版本</h1><div class="sub">连接各端口的数据主线，不是额外的大仪表盘。</div></div>
+  <div class="card"><h3><span class="ic">📚</span> 配置版本（${S.configRevisions.length}）</h3>
+    ${S.configRevisions.slice().reverse().map(r=>`<div class="row"><span class="k">v${r.revId}</span><span class="v muted">${r.by} · ${(r.at||'').slice(0,16).replace('T',' ')}${r.note?' · '+r.note:''}</span></div>`).join('')||'<div class="note">暂无版本。</div>'}</div>
+  <div class="card"><h3><span class="ic">🕒</span> 状态历史（${S.workflow.history.length}）</h3>
+    ${S.workflow.history.slice().reverse().map(h=>`<div class="hist"><span class="who">${h.by}</span><span class="act">${h.action} · ${h.from}→${h.to}</span><span>${(h.at||'').slice(11,19)}</span></div>`).join('')||'<div class="note">暂无状态转换。</div>'}</div>
+  <div class="card"><h3><span class="ic">📤</span> 数据操作</h3>
+    <button class="btn sm" onclick="exportData()">导出体验 JSON</button><button class="btn sm ghost" onclick="clearData()">清除本机记录</button>
+    <div class="note">本机 localStorage 单机演示；无登录/服务端授权，刷新后状态一致（同一浏览器）。</div></div>`;
 }
 
-/* ==================== 计算 ==================== */
-function buf(p){ return p.buf; }
-function selectedParts(){ return PARTS.filter(p=>S.commission.parts[p.id].included); }
-function overallMin(){ const sp = selectedParts(); return sp.length? Math.max(...sp.map(p=>p.baseMin+p.buf)) + 2 : 0; }
-function overallMax(){ const sp = selectedParts(); return sp.length? Math.max(...sp.map(p=>p.baseMax+p.buf)) + 4 : 0; }
-function overallWeeks(){ const a=overallMin(), b=overallMax(); return a&&b ? `${a}–${b} 周` : '未选部件'; }
-function totalCost(){ return selectedParts().reduce((s,p)=>s+p.cost,0); }
-
-/* ==================== 动作 ==================== */
-window.pickDream = function(id, val){ S.profile.choices[id]=val; save(S); emit(S,'DREAM_UPDATED',{id,val}); render(); };
-window.toggleCheck = function(group, i){ const keys=['材料','重量','安全','售后','手艺','客户确认']; const c=S.commission.forgeChecks||{}; c[keys[i]]=!c[keys[i]]; S.commission.forgeChecks=c; save(S); render(); };
-
-window.submitBrief = function(){
-  if(selectedParts().length===0){ toast('请先至少勾选一个部件'); return; }
-  if(S.commission.workflow.stage==='draft'){ S.commission.workflow.stage='muse-review'; }
-  emit(S,'CREATIVE_BRIEF_SUBMITTED',{}); save(S); toast('创作方向已提交 → MUSE 拆解'); render();
-};
-window.museSubmit = function(){
-  if(selectedParts().length===0){ toast('无入选部件'); return; }
-  S.commission.workflow.stage='forge-review'; emit(S,'MUSE_WORKPACK_SUBMITTED',{}); save(S); toast('MUSE 工作包已提交 → FORGE 双审'); render();
-};
-window.forgePass = function(){
-  S.commission.workflow.stage='sales-review'; emit(S,'FORGE_REVIEW_PASSED',{}); save(S); toast('FORGE 复核通过 → 销售确认'); render();
-};
-window.publishRange = function(){
-  S.commission.workflow.stage='awaiting-client'; emit(S,'DEALER_PACKAGE_RANGE_PUBLISHED',{}); save(S); toast('最终范围已发布 → 待客户确认'); render();
-};
-window.exportData = function(){
-  const copy = JSON.parse(JSON.stringify(S));
-  if(copy.commission.pricing) delete copy.commission.pricing;
-  const blob = new Blob([JSON.stringify(copy,null,2)], {type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ngbi-experience.json'; a.click();
-  emit(S,'DATA_EXPORTED',{}); toast('数据已导出');
-};
-window.clearData = function(){ localStorage.removeItem(LS_KEY); S=defaultState(); emit(S,'DATA_RESET',{}); toast('本机记录已清除'); render(); };
-
-function toast(msg){ const t=document.getElementById('toast'); t.textContent='✦ '+msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1600); }
-
+window.pickDream=function(id,val){ S.client.choices[id]=val; save(S); log(S,'DREAM_UPDATED',{id,val}); render(); };
+window.saveVersion=function(){ if(!hasSelected()){toast('请先在 Configurator 勾选至少一个部件');return;} const rev=snapshotConfig('客户保存配置'); toast('已保存配置版本 v'+rev.revId); render(); };
+window.submitBrief=function(){ const r=transition('client','submit'); if(!r.ok){toast(r.msg);return;} snapshotConfig('提交创作方向'); toast('已提交创作方向 → MUSE 拆解'); render(); };
+window.acceptQuote=function(){ const r=transition('client','accept'); if(!r.ok){toast(r.msg);return;} toast('已接受最终方案，进入已确认订单'); render(); };
+window.museDecompose=function(){ const tasks=PARTS.filter(p=>S.parts[p.id].included).map(p=>({part:p.id,deliverable:p.name+' 打样/方案',decision:'待确认',question:'',leadMin:partWeeks(p).min,leadMax:partWeeks(p).max})); S.workflow.museTasks=tasks; log(S,'MUSE_TASKS_DECOMPOSED',{count:tasks.length}); save(S); toast('已拆解 '+tasks.length+' 个任务'); render(); };
+window.museSubmit=function(){ const r=transition('designer','muse-submit'); if(!r.ok){toast(r.msg);return;} toast('MUSE 工作包已提交 → FORGE 双审'); render(); };
+window.toggleForgeCheck=function(name){ const c=S.workflow.forgeChecks||{}; c[name]=!c[name]; S.workflow.forgeChecks=c; save(S); render(); };
+window.forgePass=function(){ const r=transition('engineer','forge-pass'); if(!r.ok){toast(r.msg);return;} toast('FORGE 复核通过 → 销售确认'); render(); };
+window.publishRough=function(){ S.quote.status='rough'; S.quote.rough={min:88000,max:158000,currency:'CNY',assumptions:'初步探索区间，未含工程复核',by:'sales',at:new Date().toISOString()}; log(S,'QUOTE_ROUGH_PUBLISHED',{}); save(S); toast('已发布 Rough 初步区间'); render(); };
+window.publishReady=function(){ const total=totalInternalCost(); S.quote.status='ready'; S.quote.ready={min:Math.round(total*1.15),max:Math.round(total*1.4),currency:'CNY',assumptions:'FORGE 复核后最终区间，有效期 30 天',by:'sales',at:new Date().toISOString()}; const r=transition('sales','publish-ready'); if(!r.ok){toast(r.msg);return;} toast('已发布 Ready 最终区间 → 待客户确认'); render(); };
+window.exportData=function(){ const copy=JSON.parse(JSON.stringify(S)); const blob=new Blob([JSON.stringify(copy,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ngbi-journey.json'; a.click(); log(S,'DATA_EXPORTED',{}); toast('数据已导出'); };
+window.clearData=function(){ localStorage.removeItem(LS_KEY); S=defaultState(); save(S); toast('本机记录已清除'); render(); };
+function toast(msg){ const t=document.getElementById('toast'); t.textContent='✦ '+msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800); }
 window.addEventListener('hashchange', render);
 render();
 </script>
