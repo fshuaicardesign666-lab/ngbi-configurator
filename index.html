@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NGBI · Configurator 车定制器</title>
+<style>
+  :root{
+    --bg:#0E0C12; --panel:#16131C; --panel2:#1E1A26; --line:#2A2536;
+    --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0;
+    --gold:#C8A96E;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+  body{font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none;}
+
+  #stage{position:fixed;inset:0;cursor:grab;}
+  #stage:active{cursor:grabbing;}
+  canvas{display:block;}
+
+  /* 顶栏 */
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;pointer-events:none;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .enso{width:26px;height:26px;border:2px solid var(--accent2);border-radius:50%;flex:0 0 auto;}
+  .brand .t{font-size:13px;font-weight:700;letter-spacing:.24em;color:var(--ink);}
+  .brand .t span{color:var(--accent2);}
+  .brand .sub{font-size:9px;letter-spacing:.18em;color:var(--muted);margin-top:2px;}
+  .top .hint{font-size:10px;color:var(--muted);letter-spacing:.08em;pointer-events:auto;}
+
+  /* 底栏 · 色板 + 材质 + 轮毂 */
+  .dock{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .tray{display:flex;gap:8px;padding:9px 12px;background:rgba(22,19,28,.82);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:16px;}
+  .swatch{width:38px;height:38px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .18s, border-color .18s;position:relative;}
+  .swatch:hover{transform:translateY(-3px);}
+  .swatch.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.12);}
+  .swatch .nm{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--muted);white-space:nowrap;opacity:0;transition:opacity .18s;}
+  .swatch:hover .nm{opacity:1;}
+
+  /* 右侧 · 配置项 */
+  .rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:9px;}
+  .chip{background:rgba(22,19,28,.82);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:13px;padding:11px 13px;cursor:pointer;text-align:center;transition:all .18s;min-width:74px;}
+  .chip:hover{border-color:var(--accent2);}
+  .chip.on{border-color:var(--accent2);background:rgba(107,63,160,.28);}
+  .chip .ic{font-size:17px;display:block;margin-bottom:3px;}
+  .chip .lb{font-size:9.5px;color:var(--muted);letter-spacing:.04em;}
+  .chip.on .lb{color:var(--ink);}
+
+  /* 顶部中心 · 车型名 + 保存 */
+  .veh{position:fixed;top:50%;left:18px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px;}
+  .veh .v{font-size:12px;letter-spacing:.1em;color:var(--muted);cursor:pointer;padding:7px 11px;border-radius:10px;border:1px solid transparent;transition:all .18s;}
+  .veh .v:hover{border-color:var(--line);color:var(--ink);}
+  .veh .v.on{border-color:var(--accent2);color:var(--ink);background:rgba(107,63,160,.24);}
+
+  .save{position:fixed;right:18px;bottom:18px;z-index:10;background:linear-gradient(135deg,#6B3FA0,#4A2A78);color:#fff;border:none;border-radius:13px;padding:12px 18px;font-size:12px;font-weight:600;letter-spacing:.08em;cursor:pointer;transition:transform .18s, box-shadow .18s;box-shadow:0 6px 24px rgba(107,63,160,.4);}
+  .save:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(107,63,160,.55);}
+
+  /* 弹出 · 氛围光主题 / 氛围色 */
+  .pop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(8,6,10,.6);backdrop-filter:blur(6px);}
+  .pop.show{display:flex;}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:26px;min-width:320px;max-width:90vw;}
+  .card h3{font-size:15px;letter-spacing:.06em;margin-bottom:18px;color:var(--ink);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .opt{border:1px solid var(--line);border-radius:13px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .18s;}
+  .opt:hover{border-color:var(--accent2);}
+  .opt.on{border-color:var(--accent2);background:rgba(107,63,160,.24);}
+  .opt .sw{width:30px;height:30px;border-radius:50%;margin:0 auto 8px;border:2px solid rgba(255,255,255,.2);}
+  .opt .lb{font-size:11px;color:var(--muted);}
+  .opt.on .lb{color:var(--ink);}
+  .close{position:absolute;top:16px;right:20px;font-size:20px;color:var(--muted);cursor:pointer;}
+  .card{position:relative;}
+
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:30;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;color:var(--ink);opacity:0;transition:all .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<div class="top">
+  <div class="brand">
+    <div class="enso"></div>
+    <div>
+      <div class="t">NGBI <span>·</span> CONFIGURATOR</div>
+      <div class="sub">INFRASTRUCTURE FOR INDUSTRIALIZED INDIVIDUALITY</div>
+    </div>
+  </div>
+  <div class="hint">拖拽旋转 · 滚轮缩放 · 点击车身选中</div>
+</div>
+
+<div class="veh">
+  <div class="v on" data-veh="sedan">Sedan</div>
+  <div class="v" data-veh="suv">SUV</div>
+</div>
+
+<div class="rail">
+  <div class="chip on" data-chip="paint"><span class="ic">🎨</span><span class="lb">车漆</span></div>
+  <div class="chip" data-chip="wheel"><span class="ic">⚙️</span><span class="lb">轮毂</span></div>
+  <div class="chip" data-chip="grille"><span class="ic">🛡️</span><span class="lb">格栅</span></div>
+  <div class="chip" data-chip="mood"><span class="ic">✨</span><span class="lb">氛围</span></div>
+</div>
+
+<div class="dock">
+  <div class="tray" id="swatches"></div>
+</div>
+
+<button class="save" id="saveBtn">生成配置卡 ✦</button>
+
+<div class="pop" id="popWheel">
+  <div class="card">
+    <div class="close" data-close="popWheel">✕</div>
+    <h3>选择轮毂</h3>
+    <div class="grid" id="wheelGrid"></div>
+  </div>
+</div>
+
+<div class="pop" id="popGrille">
+  <div class="card">
+    <div class="close" data-close="popGrille">✕</div>
+    <h3>选择格栅</h3>
+    <div class="grid" id="grilleGrid"></div>
+  </div>
+</div>
+
+<div class="pop" id="popMood">
+  <div class="card">
+    <div class="close" data-close="popMood">✕</div>
+    <h3>数码氛围 · 光与影</h3>
+    <div class="grid" id="moodGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============ 状态 ============ */
+const state = {
+  veh: 'sedan',
+  paint: 'Arctic Silver',
+  wheel: 0,
+  grille: 0,
+  mood: 0,
+};
+
+/* ============ 色板（Bespoke 配色） ============ */
+const PAINTS = [
+  { name:'Midnight Amethyst', color:0x1a1030, metal:0.40, rough:0.34, clear:1.0 },
+  { name:'Crystal Pearl',    color:0xf2f0ea, metal:0.28, rough:0.26, clear:1.0 },
+  { name:'Onyx Black',       color:0x0c0c10, metal:0.45, rough:0.30, clear:1.0 },
+  { name:'Sapphire Navy',    color:0x14233f, metal:0.42, rough:0.30, clear:1.0 },
+  { name:'Rosewood Red',     color:0x5c1a22, metal:0.40, rough:0.32, clear:1.0 },
+  { name:'Champagne Gold',   color:0xb69a62, metal:0.52, rough:0.28, clear:1.0 },
+  { name:'Verdant Green',    color:0x1e3a2a, metal:0.38, rough:0.34, clear:1.0 },
+  { name:'Arctic Silver',    color:0xb9c2cc, metal:0.50, rough:0.24, clear:1.0 },
+];
+
+const WHEELS = ['五辐竞技','双辐优雅','密辐奢华'];
+const GRILLES = ['垂直格栅','水平格栅','星耀格栅'];
+const MOODS = [
+  { name:'极昼', color:0x9fb8ff, bg:0x12182a },
+  { name:'暮色', color:0xff9e6d, bg:0x1a1210 },
+  { name:'翡翠', color:0x6fe0b0, bg:0x0e1a16 },
+  { name:'紫夜', color:0xb99be0, bg:0x140f1e },
+];
+
+/* ============ 场景 ============ */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0E0C12);
+scene.fog = new THREE.Fog(0x0E0C12, 14, 34);
+
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(5.5, 2.2, 7.5);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.6, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 4;
+controls.maxDistance = 14;
+controls.maxPolarAngle = Math.PI * 0.52;
+controls.update();
+
+/* ============ 灯光 ============ */
+const hemi = new THREE.HemisphereLight(0xdfe4ff, 0x14101a, 0.7);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(6, 8, 6);
+key.castShadow = true;
+key.shadow.mapSize.set(1024,1024);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x8899ff, 1.4);
+rim.position.set(-5, 2, -4);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffd9a8, 0.6);
+fill.position.set(-3, 1, 5);
+scene.add(fill);
+
+const moodLight = new THREE.PointLight(0x9fb8ff, 0, 8);
+moodLight.position.set(0, 1.5, 0);
+scene.add(moodLight);
+
+/* ============ 地面 ============ */
+const floor = new THREE.Mesh(
+  new THREE.CircleGeometry(12, 64),
+  new THREE.MeshStandardMaterial({ color:0x141018, roughness:0.9, metalness:0.1 })
+);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = 0;
+floor.receiveShadow = true;
+scene.add(floor);
+
+/* ============ 车 ============ */
+const carGroup = new THREE.Group();
+scene.add(carGroup);
+
+const bodyMat = new THREE.MeshPhysicalMaterial({
+  color: 0xb9c2cc, metalness: 0.45, roughness: 0.28,
+  clearcoat: 1.0, clearcoatRoughness: 0.06,
+});
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: 0x0a0d12, metalness: 0.1, roughness: 0.08,
+  clearcoat: 0.6, clearcoatRoughness: 0.1,
+});
+const trimMat = new THREE.MeshStandardMaterial({ color:0x2a2536, metalness:0.9, roughness:0.4 });
+const chromeMat = new THREE.MeshStandardMaterial({ color:0xd8d4cc, metalness:1.0, roughness:0.15 });
+
+let bodyMesh, glassMesh;
+const wheelMeshes = [];
+const grilleGroup = new THREE.Group();
+
+function buildCar(kind){
+  // 清空
+  while(carGroup.children.length) carGroup.remove(carGroup.children[0]);
+  wheelMeshes.length = 0;
+
+  // 尺寸
+  const L = kind==='sedan' ? 5.4 : 5.0;
+  const H = kind==='sedan' ? 1.42 : 1.85;
+  const W = kind==='sedan' ? 2.0 : 2.05;
+  const wbase = kind==='sedan' ? 3.3 : 3.1;
+  const wheelR = kind==='sedan' ? 0.38 : 0.44;
+
+  // 车身侧面轮廓（流畅曲面）
+  const shape = new THREE.Shape();
+  const roofY = H;
+  const beltY = H * 0.58;
+  if(kind==='sedan'){
+    shape.moveTo(0.0, 0.18);          // 后保险杠底
+    shape.lineTo(0.05, 0.5);
+    shape.lineTo(0.45, beltY*0.95);   // 后悬
+    shape.bezierCurveTo(1.2, beltY, 1.8, beltY+0.05, 2.3, beltY+0.08); // 后门
+    shape.bezierCurveTo(2.55, H*0.9, 2.75, roofY, 3.1, roofY); // C柱→车顶
+    shape.lineTo(3.7, roofY);         // 车顶
+    shape.bezierCurveTo(4.1, roofY, 4.25, H*0.85, 4.5, beltY*0.95); // A柱→引擎盖
+    shape.bezierCurveTo(4.9, beltY*0.8, 5.15, beltY*0.85, 5.3, 0.75); // 前脸
+    shape.lineTo(5.4, 0.42);          // 格栅
+    shape.lineTo(5.32, 0.16);         // 前保险杠
+    shape.lineTo(0.0, 0.18);
+  } else {
+    shape.moveTo(0.0, 0.2);
+    shape.lineTo(0.05, 0.62);
+    shape.lineTo(0.4, beltY);
+    shape.bezierCurveTo(1.1, beltY+0.02, 1.7, H*0.82, 2.3, H*0.88);
+    shape.bezierCurveTo(2.7, roofY, 3.1, roofY, 3.6, roofY*0.98);
+    shape.bezierCurveTo(4.0, H*0.82, 4.3, beltY, 4.6, beltY*0.92);
+    shape.bezierCurveTo(4.85, H*0.75, 4.95, 0.78, 5.0, 0.5);
+    shape.lineTo(4.92, 0.2);
+    shape.lineTo(0.0, 0.2);
+  }
+
+  const extrude = { depth: W, bevelEnabled:true, bevelThickness:0.06, bevelSize:0.06, bevelSegments:6, curveSegments:48 };
+  const geo = new THREE.ExtrudeGeometry(shape, extrude);
+  bodyMesh = new THREE.Mesh(geo, bodyMat);
+  bodyMesh.castShadow = true;
+  bodyMesh.receiveShadow = true;
+  carGroup.add(bodyMesh);
+
+  // 车窗（greenhouse）
+  const gshape = new THREE.Shape();
+  if(kind==='sedan'){
+    gshape.moveTo(2.35, beltY+0.06);
+    gshape.bezierCurveTo(2.6, H*0.88, 2.8, roofY-0.03, 3.1, roofY-0.02);
+    gshape.lineTo(3.7, roofY-0.02);
+    gshape.bezierCurveTo(4.05, roofY-0.02, 4.2, H*0.82, 4.45, beltY+0.03);
+    gshape.lineTo(3.9, beltY+0.06);
+    gshape.bezierCurveTo(3.6, H*0.75, 2.9, H*0.75, 2.6, beltY+0.06);
+  } else {
+    gshape.moveTo(2.3, beltY+0.06);
+    gshape.bezierCurveTo(2.6, H*0.86, 2.9, roofY-0.05, 3.3, roofY-0.03);
+    gshape.lineTo(3.75, roofY-0.03);
+    gshape.bezierCurveTo(4.1, roofY-0.03, 4.35, H*0.8, 4.6, beltY+0.05);
+    gshape.lineTo(4.0, beltY+0.06);
+    gshape.bezierCurveTo(3.7, H*0.72, 3.0, H*0.72, 2.65, beltY+0.06);
+  }
+  const ggeo = new THREE.ExtrudeGeometry(gshape, { depth: W*1.05, bevelEnabled:true, bevelThickness:0.02, bevelSize:0.02, bevelSegments:3, curveSegments:32 });
+  glassMesh = new THREE.Mesh(ggeo, glassMat);
+  glassMesh.castShadow = true;
+  carGroup.add(glassMesh);
+
+  // 轮毂（x: 后轮 1.05 / 前轮 L-1.05；z: 车身两侧外）
+  const wx = [1.05, L - 1.05];
+  const wz = [-0.06, W + 0.06];
+  for(let i=0;i<2;i++){
+    for(const z of wz){
+      const wheel = buildWheel(wheelR);
+      wheel.position.set(wx[i], wheelR, z);
+      carGroup.add(wheel);
+      wheelMeshes.push(wheel);
+    }
+  }
+
+  // 格栅
+  buildGrille(kind, W, beltY, H);
+
+  // 整车居中（车身未 center，统一在这里平移）
+  carGroup.position.set(-L/2, 0, -W/2);
+}
+
+function buildWheel(r){
+  const g = new THREE.Group();
+  const tire = new THREE.Mesh(
+    new THREE.CylinderGeometry(r, r, 0.3, 48),
+    new THREE.MeshStandardMaterial({ color:0x0a0a0c, roughness:0.85, metalness:0.1 })
+  );
+  tire.rotation.x = Math.PI/2;
+  g.add(tire);
+  const rim = new THREE.Mesh(
+    new THREE.CylinderGeometry(r*0.62, r*0.62, 0.32, 32),
+    chromeMat.clone()
+  );
+  rim.rotation.x = Math.PI/2;
+  g.add(rim);
+  // 辐条
+  const spokeMat = new THREE.MeshStandardMaterial({ color:0x9a94a6, metalness:1, roughness:0.3 });
+  const n = state.wheel===0 ? 5 : (state.wheel===1 ? 7 : 10);
+  for(let i=0;i<n;i++){
+    const a = (i/n)*Math.PI*2;
+    const sp = new THREE.Mesh(new THREE.BoxGeometry(0.06, r*0.55, 0.34), spokeMat);
+    sp.position.set(Math.cos(a)*r*0.3, Math.sin(a)*r*0.3, 0);
+    sp.rotation.z = a;
+    sp.rotation.y = Math.PI/2;
+    g.add(sp);
+  }
+  g.userData.isWheel = true;
+  return g;
+}
+
+function buildGrille(kind, W, beltY, H){
+  grilleGroup.clear();
+  const frontX = kind==='sedan' ? 5.4 : 5.0;
+  const h = kind==='sedan' ? 0.52 : 0.58;
+  const gy = 0.46;            // 前脸格栅中心高度
+  const style = state.grille;
+  const mat = chromeMat;
+  const gx = frontX + 0.03;   // 凸出前脸
+  const gz = W/2;             // z 居中
+  // 外框
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(0.08, h+0.14, W*0.66), mat);
+  frame.position.set(gx, gy, gz);
+  grilleGroup.add(frame);
+  // 格栅条
+  const n = style===0 ? 11 : (style===1 ? 6 : 16);
+  for(let i=0;i<n;i++){
+    if(style===0){
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.07, h, 0.08), mat);
+      bar.position.set(gx, gy, W*0.24 + (i/(n-1))*W*0.52);
+      grilleGroup.add(bar);
+    } else if(style===1){
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, W*0.52), mat);
+      bar.position.set(gx, gy - h*0.4 + (i/(n-1))*h*0.8, gz);
+      grilleGroup.add(bar);
+    } else {
+      for(let j=0;j<4;j++){
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 10), mat);
+        dot.position.set(gx, gy - h*0.35 + (i/(n-1))*h*0.7, W*0.24 + (j/3)*W*0.52);
+        grilleGroup.add(dot);
+      }
+    }
+  }
+  carGroup.add(grilleGroup);
+}
+
+function applyPaint(){
+  const p = PAINTS.find(x=>x.name===state.paint);
+  bodyMat.color.setHex(p.color);
+  bodyMat.metalness = p.metal;
+  bodyMat.roughness = p.rough;
+  bodyMat.clearcoat = p.clear;
+}
+function applyMood(){
+  const m = MOODS[state.mood];
+  moodLight.color.setHex(m.color);
+  moodLight.intensity = 2.4;
+  scene.background.setHex(m.bg);
+  scene.fog.color.setHex(m.bg);
+}
+function rebuildWheels(){
+  wheelMeshes.forEach(w=>carGroup.remove(w));
+  wheelMeshes.length = 0;
+  const r = state.veh==='sedan'?0.38:0.44;
+  const L = state.veh==='sedan'?5.4:5.0;
+  const W = state.veh==='sedan'?2.0:2.05;
+  const wx = [1.05, L - 1.05];
+  const wz = [-0.06, W + 0.06];
+  for(let i=0;i<2;i++) for(const z of wz){
+    const wh = buildWheel(r);
+    wh.position.set(wx[i], r, z);
+    carGroup.add(wh);
+    wheelMeshes.push(wh);
+  }
+}
+
+buildCar('sedan');
+applyPaint();
+applyMood();
+
+/* ============ UI 渲染 ============ */
+const swatchesEl = document.getElementById('swatches');
+PAINTS.forEach(p=>{
+  const d = document.createElement('div');
+  d.className = 'swatch' + (p.name===state.paint?' on':'');
+  d.style.background = '#'+p.color.toString(16).padStart(6,'0');
+  d.dataset.name = p.name;
+  d.innerHTML = `<span class="nm">${p.name}</span>`;
+  d.onclick = ()=>{ state.paint=p.name; applyPaint(); document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('on', s.dataset.name===p.name)); toast(p.name); };
+  swatchesEl.appendChild(d);
+});
+
+function showPop(id){
+  document.getElementById(id).classList.add('show');
+}
+document.querySelectorAll('.chip').forEach(c=>{
+  c.onclick = ()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    if(c.dataset.chip==='wheel') showPop('popWheel');
+    if(c.dataset.chip==='grille') showPop('popGrille');
+    if(c.dataset.chip==='mood') showPop('popMood');
+  };
+});
+document.querySelectorAll('.close').forEach(x=>x.onclick=()=>document.getElementById(x.dataset.close).classList.remove('show'));
+
+// 轮毂选项
+const wg = document.getElementById('wheelGrid');
+WHEELS.forEach((n,i)=>{
+  const o = document.createElement('div');
+  o.className='opt'+(i===state.wheel?' on':'');
+  o.innerHTML=`<div class="sw" style="background:radial-gradient(circle at 35% 35%, #c9c4d0, #4a4454)"></div><div class="lb">${n}</div>`;
+  o.onclick=()=>{ state.wheel=i; rebuildWheels(); document.querySelectorAll('#wheelGrid .opt').forEach((e,j)=>e.classList.toggle('on',j===i)); toast(n); };
+  wg.appendChild(o);
+});
+// 格栅选项
+const gg = document.getElementById('grilleGrid');
+GRILLES.forEach((n,i)=>{
+  const o = document.createElement('div');
+  o.className='opt'+(i===state.grille?' on':'');
+  o.innerHTML=`<div class="sw" style="background:${['repeating-linear-gradient(90deg,#d8d4cc 0 3px,#3a3344 3px 8px)','repeating-linear-gradient(#d8d4cc 0 3px,#3a3344 3px 8px)','radial-gradient(circle,#d8d4cc 1px,transparent 1.5px)']}"></div><div class="lb">${n}</div>`;
+  o.onclick=()=>{ state.grille=i; buildGrille(state.veh, state.veh==='sedan'?2.0:2.05, state.veh==='sedan'?0.82:1.1, state.veh==='sedan'?1.42:1.85); document.querySelectorAll('#grilleGrid .opt').forEach((e,j)=>e.classList.toggle('on',j===i)); toast(n); };
+  gg.appendChild(o);
+});
+// 氛围选项
+const mg = document.getElementById('moodGrid');
+MOODS.forEach((n,i)=>{
+  const o = document.createElement('div');
+  o.className='opt'+(i===state.mood?' on':'');
+  o.innerHTML=`<div class="sw" style="background:#${n.color.toString(16).padStart(6,'0')}"></div><div class="lb">${n.name}</div>`;
+  o.onclick=()=>{ state.mood=i; applyMood(); document.querySelectorAll('#moodGrid .opt').forEach((e,j)=>e.classList.toggle('on',j===i)); toast(n.name); };
+  mg.appendChild(o);
+});
+
+// 车型切换
+document.querySelectorAll('.veh .v').forEach(v=>{
+  v.onclick=()=>{
+    document.querySelectorAll('.veh .v').forEach(x=>x.classList.remove('on'));
+    v.classList.add('on');
+    state.veh = v.dataset.veh;
+    buildCar(state.veh);
+    applyPaint(); applyMood();
+  };
+});
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = '✦ ' + msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+
+// 保存配置卡
+document.getElementById('saveBtn').onclick = ()=>{
+  const p = PAINTS.find(x=>x.name===state.paint);
+  const lines = [
+    'NGBI CONFIGURATOR · 配置卡',
+    '━━━━━━━━━━━━━━━━',
+    '车型  '+ (state.veh==='sedan'?'Sedan 旗舰轿车':'SUV 壮硕旗舰'),
+    '车漆  '+ state.paint,
+    '轮毂  '+ WHEELS[state.wheel],
+    '格栅  '+ GRILLES[state.grille],
+    '氛围  '+ MOODS[state.mood].name,
+    '━━━━━━━━━━━━━━━━',
+    'Build the capability before the market arrives.',
+  ];
+  toast('配置已生成，见控制台 / 可导出');
+  console.log('%c'+lines.join('\n'), 'color:#B99BE0');
+  // 简单导出为文本下载
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'NGBI_配置.txt';
+  a.click();
+};
+
+/* ============ 调试暴露 ============ */
+window.__cfg = { carGroup, bodyMesh, scene, camera };
+
+/* ============ 渲染循环 ============ */
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  // 轮子缓慢自转（展示用）
+  wheelMeshes.forEach(w=>{ w.rotation.y += 0.005; });
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
