@@ -41,6 +41,8 @@
   .item .l .en{display:block;font-size:8px;color:var(--muted);letter-spacing:.08em;margin-top:1px;text-transform:uppercase;}
   .item .v{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
   .item .v .dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.25);flex:0 0 auto;}
+  .item .ck{width:17px;height:17px;border:1px solid var(--line);border-radius:5px;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;margin-right:9px;transition:all .15s;}
+  .item .ck.on{background:var(--accent);border-color:var(--accent);}
 
   /* 底部色板 */
   .dock{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;gap:9px;align-items:center;max-width:94vw;}
@@ -57,6 +59,7 @@
   .menu{position:fixed;left:14px;top:58px;z-index:11;width:38px;height:38px;border-radius:11px;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);font-size:16px;cursor:pointer;}
   .summary{position:fixed;right:14px;top:58px;z-index:11;height:38px;padding:0 14px;border-radius:11px;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);font-size:11px;cursor:pointer;letter-spacing:.06em;}
   .save{position:fixed;right:14px;top:104px;z-index:11;background:linear-gradient(135deg,#6B3FA0,#4A2A78);color:#fff;border:none;border-radius:13px;padding:12px 18px;font-size:11px;font-weight:600;letter-spacing:.08em;cursor:pointer;box-shadow:0 6px 24px rgba(107,63,160,.4);}
+  .back{position:fixed;left:14px;top:104px;z-index:11;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);border-radius:13px;padding:11px 16px;font-size:11px;cursor:pointer;letter-spacing:.06em;}
   .save:hover{transform:translateY(-2px);}
 
   /* 配置摘要弹窗 */
@@ -111,6 +114,7 @@
   <div class="tray" id="tray"></div>
 </div>
 
+<button class="back" onclick="location.href='ngbi.html#/self'">← NGBI 系统</button>
 <button class="save" id="saveBtn">生成配置卡 ✦</button>
 
 <div class="modal" id="summaryModal">
@@ -209,6 +213,15 @@ const PALETTES = {
   treadplate: [
     {name:'拉丝钢', color:0xb8bcc4},{name:'发光白', color:0xd8dcff},{name:'碳纤', color:0x1a1c20},{name:'古铜', color:0x9a7a5a},
   ],
+  rearseatback: [
+    {name:'同前座', color:null},{name:'钢琴黑', color:0x0e0e12},{name:'胡桃木', color:0x6a4a2a},{name:'碳纤维', color:0x1a1c20},
+  ],
+  metal: [
+    {name:'拉丝铝', color:0xa8adb4},{name:'玫瑰金', color:0xb87a6a},{name:'古铜', color:0x9a7a5a},{name:'曜黑', color:0x1a1a1e},
+  ],
+  steering: [
+    {name:'曜黑皮革', color:0x1c1a1a},{name:'象牙白', color:0xe8e2d4},{name:'焦糖棕', color:0x8a5a2a},{name:'波尔多红', color:0x6e1a1a},
+  ],
   coachline: [
     {name:'无', color:null},{name:'香槟金', color:0xc8a96e},{name:'铂银', color:0xd8d8dd},{name:'卫红', color:0xd5001c},{name:'象牙白', color:0xf2f2ec},
   ],
@@ -254,6 +267,9 @@ const CHECKLIST = [
     {id:'embroidery', label:'头枕刺绣', en:'Embroidery'},
     {id:'seattexture', label:'座椅纹理', en:'Texture'},
     {id:'treadplate', label:'迎宾踏板', en:'Tread Plate'},
+    {id:'rearseatback', label:'后排座椅背板', en:'Rear Seat Back'},
+    {id:'metal', label:'金属饰件', en:'Metal Trim'},
+    {id:'steering', label:'方向盘', en:'Steering Wheel'},
   ]},
   { cat:'数码', ic:'✨', items:[
     {id:'mood', label:'氛围光', en:'Mood', apply:'mood'},
@@ -263,6 +279,44 @@ const CHECKLIST = [
 
 const state = {};   // { paint:0, rim:0, ... }
 CHECKLIST.forEach(c=>c.items.forEach(it=>{ state[it.id]=0; }));
+const included = {};  // 每个 checklist 项是否选入创作清单
+CHECKLIST.forEach(c=>c.items.forEach(it=>{ included[it.id]=false; }));
+
+// configurator id → NGBI 19 部件 id 映射
+const PART_MAP = { paint:'paint', rim:'wheel', caliper:'smalldetail', lights:'headlight', glass:'smalldetail', trim:'smalldetail',
+  coachline:'coachline', stripes:'hood', frontpattern:'hood', rearpattern:'trunk',
+  leather:'leather', stitch:'leather', veneer:'fascia', starlight:'starlight', doorpanel:'doorpanel',
+  seatback:'frontseatback', fascia:'fascia', embroidery:'embroidery', seattexture:'quilt', treadplate:'tread',
+  rearseatback:'rearseatback', metal:'metal', steering:'steering' };
+
+const NG_KEY = 'ngbi.demo.v1';
+function syncToNGBI(){
+  let d = {};
+  try{ d = JSON.parse(localStorage.getItem(NG_KEY)) || {}; }catch(e){}
+  if(!d.commission){ d.commission = { vehicle:'porsche', parts:{}, workflow:{stage:'draft'}, quote:{status:'none',min:128000,max:198000,currency:'CNY',packageName:'Porsche 样例'} }; }
+  if(!d.commission.parts) d.commission.parts = {};
+  CHECKLIST.forEach(cat=>cat.items.forEach(it=>{
+    const pid = PART_MAP[it.id]; if(!pid) return;
+    const opt = PALETTES[it.id][state[it.id]];
+    d.commission.parts[pid] = {
+      included: !!included[it.id],
+      material: opt.name, color: opt.color, finish: '', shape: it.label, process: '', note: ''
+    };
+  }));
+  localStorage.setItem(NG_KEY, JSON.stringify(d));
+}
+function loadFromNGBI(){
+  try{
+    const d = JSON.parse(localStorage.getItem(NG_KEY));
+    if(!d || !d.commission || !d.commission.parts) return;
+    const rev = {}; for(const pid in d.commission.parts){ rev[pid] = d.commission.parts[pid]; }
+    CHECKLIST.forEach(cat=>cat.items.forEach(it=>{
+      const pid = PART_MAP[it.id]; if(!pid || !rev[pid]) return;
+      if(rev[pid].included) included[it.id] = true;
+    }));
+  }catch(e){}
+}
+loadFromNGBI();
 
 /* ==================== 渲染器 ==================== */
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -464,7 +518,8 @@ CHECKLIST.forEach(cat=>{
   ct.innerHTML = `<div class="cat-t"><span class="ic">${cat.ic}</span>${cat.cat}</div>`;
   cat.items.forEach(it=>{
     const d = document.createElement('div'); d.className='item'; d.dataset.id = it.id;
-    d.innerHTML = `<div class="l">${it.label}<span class="en">${it.en}</span></div><div class="v"><span class="val-txt"></span><span class="dot" style="background:transparent"></span></div>`;
+    d.innerHTML = `<div class="ck ${included[it.id]?'on':''}">${included[it.id]?'✓':''}</div><div class="l">${it.label}<span class="en">${it.en}</span></div><div class="v"><span class="val-txt"></span><span class="dot" style="background:transparent"></span></div>`;
+    d.querySelector('.ck').onclick = (e)=>{ e.stopPropagation(); included[it.id]=!included[it.id]; d.querySelector('.ck').classList.toggle('on', included[it.id]); d.querySelector('.ck').textContent = included[it.id]?'✓':''; syncToNGBI(); };
     d.onclick = ()=> selectItem(it.id);
     ct.appendChild(d);
   });
@@ -506,6 +561,7 @@ function renderTray(id){
       if(it.apply) APPLY[it.apply]();
       // trim 的"车身同色"需要跟随车漆
       if(id==='paint' && state.trim>0 && PALETTES.trim[state.trim].color===null) APPLY.trim();
+      syncToNGBI();
       toast(o.name);
     };
     tray.appendChild(d);
