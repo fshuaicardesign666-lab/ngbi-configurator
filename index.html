@@ -2,118 +2,374 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NGBI · 五端架构</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NGBI · 五端定制系统</title>
 <style>
-  :root{ --bg:#0A0A0F; --panel:#16121e; --line:rgba(255,255,255,.09); --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0; --gold:#C8A96E; }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
-  body::before{content:"";position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%, rgba(107,63,160,.25), transparent 60%), radial-gradient(800px 500px at 85% 110%, rgba(200,169,110,.1), transparent 60%);pointer-events:none;z-index:0}
+  :root{ --bg:#0A0A0F; --panel:#16121e; --panel2:#1A1622; --line:rgba(255,255,255,.09); --ink:#F2EFF7; --muted:#8A8494; --accent:#6B3FA0; --accent2:#B99BE0; --gold:#C8A96E; --ok:#6FE0B0; --warn:#ff9e6d; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+  body{font-family:"Noto Sans SC","Microsoft YaHei",-apple-system,sans-serif;color:var(--ink);}
+  button{font-family:inherit;cursor:pointer;}
 
-  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:48px 24px 64px}
+  .app{display:flex;flex-direction:column;height:100%;}
+  /* 顶部导航 */
+  .nav{display:flex;align-items:center;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto;overflow-x:auto;}
+  .nav .brand{display:flex;align-items:center;gap:8px;margin-right:12px;flex:0 0 auto;}
+  .enso{width:22px;height:22px;border:2px solid var(--accent2);border-radius:50%;}
+  .brand .t{font-size:13px;font-weight:700;letter-spacing:.16em;}
+  .brand .t span{color:var(--accent2);}
+  .nav .tabs{display:flex;gap:4px;}
+  .tab{padding:8px 14px;border-radius:10px;font-size:12px;color:var(--muted);letter-spacing:.06em;white-space:nowrap;transition:all .15s;border:1px solid transparent;}
+  .tab:hover{color:var(--ink);}
+  .tab.on{background:rgba(107,63,160,.25);color:var(--ink);border-color:var(--accent2);}
 
-  .brand{display:flex;align-items:center;gap:13px;justify-content:center;margin-bottom:8px}
-  .enso{width:34px;height:34px;border:2px solid var(--accent2);border-radius:50%}
-  .brand .t{font-size:22px;font-weight:700;letter-spacing:.22em}
-  .brand .t span{color:var(--accent2)}
+  /* 内容区 */
+  .main{flex:1;overflow-y:auto;padding:20px;}
 
-  .hero{text-align:center;margin:28px 0 44px}
-  .hero h1{font-size:34px;font-weight:700;letter-spacing:.06em;margin-bottom:12px}
-  .hero h1 .g{background:linear-gradient(120deg,#C8A96E,#E8D9B0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .hero .sub{font-size:11px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase}
-  .hero .desc{font-size:13px;color:var(--muted);margin-top:14px;letter-spacing:.04em}
+  .head{margin-bottom:18px;}
+  .head .tag{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;}
+  .head h1{font-size:22px;font-weight:700;letter-spacing:.04em;margin:4px 0 6px;}
+  .head .sub{font-size:12px;color:var(--muted);line-height:1.6;}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;}
+  .card h3{font-size:13px;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .card h3 .ic{font-size:15px;}
 
-  .card{position:relative;background:linear-gradient(160deg,var(--panel),#110d16);border:1px solid var(--line);border-radius:20px;padding:26px;transition:transform .2s, border-color .2s, box-shadow .2s;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-height:190px}
-  .card:hover{transform:translateY(-4px);border-color:var(--accent2);box-shadow:0 16px 40px rgba(0,0,0,.5)}
-  .card::after{content:"";position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 70%);opacity:.5}
-  .card .tag{display:inline-block;font-size:9px;letter-spacing:.18em;color:var(--gold);margin-bottom:12px}
-  .card .nm{font-size:19px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
-  .card .nm small{font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.1em}
-  .card .ds{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px;flex:1}
-  .card .go{margin-top:16px;font-size:11px;letter-spacing:.1em;color:var(--accent2);display:flex;align-items:center;gap:6px}
-  .card .go::after{content:"→";transition:transform .2s}
-  .card:hover .go::after{transform:translateX(4px)}
-  .card.self-c{--glow:rgba(107,63,160,.5)}
-  .card.self-s{--glow:rgba(185,155,224,.5)}
-  .card.muse{--glow:rgba(200,169,110,.5)}
-  .card.forge{--glow:rgba(111,224,176,.4)}
-  .card.nexus{--glow:rgba(159,184,255,.4)}
-  .card.master{--glow:rgba(255,158,109,.4)}
+  .badge{display:inline-block;font-size:9px;padding:3px 9px;border-radius:8px;letter-spacing:.08em;margin-left:8px;}
+  .badge.stage{background:rgba(107,63,160,.25);color:var(--accent2);}
+  .badge.demo{background:rgba(200,169,110,.18);color:var(--gold);}
 
-  .foot{text-align:center;margin-top:52px;font-size:10px;letter-spacing:.2em;color:var(--muted)}
-  .foot .line{width:40px;height:1px;background:var(--gold);margin:0 auto 16px}
+  /* 梦境五幕 */
+  .dreams{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .dream{border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:all .15s;background:var(--panel);}
+  .dream:hover{border-color:var(--accent2);}
+  .dream.on{border-color:var(--accent2);background:rgba(107,63,160,.18);}
+  .dream .q{font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.06em;}
+  .dream .opts{display:flex;flex-wrap:wrap;gap:6px;}
+  .dream .opt{font-size:11px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:all .12s;}
+  .dream .opt:hover{color:var(--ink);}
+  .dream .opt.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* 部件清单 */
+  .part{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .part:last-child{border-bottom:none;}
+  .part .ck{width:18px;height:18px;border:1px solid var(--line);border-radius:5px;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent2);}
+  .part .ck.on{background:var(--accent);border-color:var(--accent);}
+  .part .nm{flex:1;font-size:12px;}
+  .part .nm small{display:block;font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px;}
+  .part .wk{font-size:10px;color:var(--muted);text-align:right;flex:0 0 auto;}
+  .part .wk b{display:block;color:var(--gold);font-size:11px;font-weight:600;}
+
+  /* 状态流 */
+  .flow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .step{font-size:11px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;}
+  .step.done{background:rgba(111,224,176,.12);color:var(--ok);border-color:rgba(111,224,176,.3);}
+  .step.cur{background:rgba(107,63,160,.25);color:var(--ink);border-color:var(--accent2);}
+  .step .ar{margin:0 2px;color:var(--muted);}
+
+  .btn{display:inline-block;background:linear-gradient(135deg,#6B3FA0,#4A2A78);color:#fff;border:none;border-radius:11px;padding:11px 20px;font-size:12px;font-weight:600;letter-spacing:.06em;margin-right:8px;box-shadow:0 4px 18px rgba(107,63,160,.35);}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);box-shadow:none;}
+  .btn.sm{padding:8px 14px;font-size:11px;}
+
+  .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+  .row:last-child{border-bottom:none;}
+  .row .k{color:var(--muted);}
+  .row .v{color:var(--ink);font-weight:600;}
+  .row .v.gold{color:var(--gold);}
+  .note{font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:10px;border-left:2px solid var(--gold);}
+  .note b{color:var(--gold);}
+
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:99;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="brand"><div class="enso"></div><div class="t">NGBI <span>·</span> SYSTEM</div></div>
-  <div class="hero">
-    <h1>五端架构 · <span class="g">工业化个性化</span></h1>
-    <div class="sub">Infrastructure for Industrialized Individuality</div>
-    <div class="desc">从个体的意图，到灵感的诞生，到制造的实现——一条完整的定制链路</div>
+<div class="app">
+  <div class="nav">
+    <div class="brand"><div class="enso"></div><div class="t">NGBI <span>·</span></div></div>
+    <div class="tabs" id="tabs"></div>
   </div>
-
-  <div class="grid">
-    <div class="card self-c" onclick="go('configurator.html?mode=self')">
-      <div class="tag">SELF · 客户端</div>
-      <div class="nm">个体定制 <small>CONSUMER</small></div>
-      <div class="ds">你的座驾，你来定义。沉浸式 3D 定制器，每一个零部件、每一处颜色材质，都随心而配。</div>
-      <div class="go">进入定制器</div>
-    </div>
-
-    <div class="card self-s" onclick="go('configurator.html?mode=sales')">
-      <div class="tag">SELF · 销售端</div>
-      <div class="nm">顾问定制 <small>SALES</small></div>
-      <div class="ds">销售顾问协助客户共创，实时呈现每一处选择，生成可交付的 bespoke 配置方案。</div>
-      <div class="go">进入顾问端</div>
-    </div>
-
-    <div class="card muse" onclick="go('configurator.html?mode=muse')">
-      <div class="tag">MUSE · 设计端</div>
-      <div class="nm">灵感创作 <small>DESIGN</small></div>
-      <div class="ds">设计师的创作工坊——CMF 材质、图形纹样、造型比例，在这里把灵感变成可制造的形态。</div>
-      <div class="go">进入设计端</div>
-    </div>
-
-    <div class="card forge" onclick="soon('FORGE · 制造端')">
-      <div class="tag">FORGE · 制造端</div>
-      <div class="nm">制造实现 <small>FORGE</small></div>
-      <div class="ds">3D 打印、金属打印、柔性产线——把定制方案直接转化为可制造的指令。</div>
-      <div class="go">制造视图（建设中）</div>
-    </div>
-
-    <div class="card nexus" onclick="soon('NEXUS · 连接端')">
-      <div class="tag">NEXUS · 连接端</div>
-      <div class="nm">生态连接 <small>NEXUS</small></div>
-      <div class="ds">供应链、合作伙伴、数据流通——让个性化定制的生态无缝协同。</div>
-      <div class="go">连接视图（建设中）</div>
-    </div>
-
-    <div class="card master" onclick="soon('MASTER · 管理端')">
-      <div class="tag">MASTER · 管理端</div>
-      <div class="nm">数据与权限 <small>MASTER</small></div>
-      <div class="ds">订单、客户、权限、分析——统揽全局的管理中枢。</div>
-      <div class="go">管理后台（建设中）</div>
-    </div>
-  </div>
-
-  <div class="foot">
-    <div class="line"></div>
-    Build the capability before the market arrives.
-  </div>
+  <div class="main" id="main"></div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-  function go(url){ location.href = url; }
-  function soon(name){
-    const t = document.createElement('div');
-    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A1622;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px 18px;font-size:12px;z-index:99;color:#F2EFF7';
-    t.textContent = '✦ ' + name + ' 建设中，敬请期待';
-    document.body.appendChild(t);
-    setTimeout(()=>t.remove(), 1800);
+/* ==================== 数据模型（localStorage） ==================== */
+const LS_KEY = 'ngbi.demo.v1';
+const PARTS = [
+  // 外饰
+  {id:'paint', grp:'外饰', name:'车身漆面', baseMin:4, baseMax:6, buf:2, cost:28800, focus:'冻结颜色/漆面目标；色板和光泽复核。'},
+  {id:'coachline', grp:'外饰', name:'Coachline 图形线', baseMin:2, baseMax:3, buf:1, cost:6800, focus:'确认线条路径和公差；制作手绘/印刷样片。'},
+  {id:'hood', grp:'外饰', name:'引擎盖图案', baseMin:3, baseMax:5, buf:1, cost:9500, focus:'锁定图案文件和定位；确认表面兼容并打样。'},
+  {id:'trunk', grp:'外饰', name:'尾箱/行李厢图案', baseMin:3, baseMax:5, buf:1, cost:8200, focus:'确认图案与开合边界；打样检查耐候和附着。'},
+  {id:'wheel', grp:'外饰', name:'轮圈与中心盖', baseMin:4, baseMax:6, buf:2, cost:18600, focus:'冻结几何/表面/接口；供应链、载荷和样件评审。'},
+  {id:'headlight', grp:'外饰', name:'前灯与灯眉', baseMin:6, baseMax:10, buf:2, cost:12800, focus:'确认光学/法规/接口；完成光导、配光、装配复核。'},
+  {id:'taillight', grp:'外饰', name:'尾灯与灯带', baseMin:6, baseMax:10, buf:2, cost:11600, focus:'确认几何、色彩和密封；完成样件与耐久评审。'},
+  {id:'tread', grp:'外饰', name:'迎宾踏板 Tread plates', baseMin:3, baseMax:5, buf:1, cost:5200, focus:'冻结尺寸/标识/表面；蚀刻或加工样件触感复核。'},
+  {id:'smalldetail', grp:'外饰', name:'外部小件细节', baseMin:3, baseMax:6, buf:2, cost:4600, focus:'明确小件、接口和公差；工艺样件与装配检查。'},
+  // 座舱
+  {id:'leather', grp:'座舱', name:'皮革与软包', baseMin:4, baseMax:6, buf:2, cost:36800, focus:'确认皮料/颜色/批次；裁片、包覆和触感评审。'},
+  {id:'quilt', grp:'座舱', name:'座椅纹理与绗缝', baseMin:3, baseMax:5, buf:2, cost:12800, focus:'冻结纹理/针距/区域；压纹、打孔和缝线复核。'},
+  {id:'embroidery', grp:'座舱', name:'头枕刺绣', baseMin:2, baseMax:4, buf:1, cost:3200, focus:'客户确认图稿/尺寸/位置；针法与线色样片签核。'},
+  {id:'doorpanel', grp:'座舱', name:'门板与门饰板', baseMin:5, baseMax:8, buf:2, cost:16800, focus:'确认分区/材料/装饰边界；包覆或 CNC 样件检查。'},
+  {id:'frontseatback', grp:'座舱', name:'前排座椅背板', baseMin:4, baseMax:7, buf:2, cost:9800, focus:'冻结造型/收纳/触点；结构和表面样件装配验证。'},
+  {id:'rearseatback', grp:'座舱', name:'后排座椅背板', baseMin:4, baseMax:7, buf:2, cost:8600, focus:'确认造型/场景；样件评审维护和装配边界。'},
+  {id:'fascia', grp:'座舱', name:'仪表台 IP fascia', baseMin:6, baseMax:9, buf:3, cost:15800, focus:'冻结饰面/图案/接口；样件与工程复核。'},
+  {id:'starlight', grp:'座舱', name:'星空顶', baseMin:5, baseMax:8, buf:2, cost:22800, focus:'确认顶篷材料/星图/布点；光纤或微孔样片检查。'},
+  {id:'metal', grp:'座舱', name:'金属饰件', baseMin:4, baseMax:6, buf:2, cost:7800, focus:'冻结金属牌号/滚花/表面；CNC 或打印试样复核。'},
+  {id:'steering', grp:'座舱', name:'方向盘', baseMin:3, baseMax:5, buf:1, cost:7200, focus:'确认握持区/缝线/材料；包覆和人机触感复核。'},
+];
+const STAGES = ['draft','muse-review','forge-review','sales-review','awaiting-client','accepted'];
+const STAGE_LABEL = { 'draft':'初步估算','muse-review':'MUSE 拆解','forge-review':'FORGE 双审','sales-review':'销售确认','awaiting-client':'待客户确认','accepted':'已确认' };
+const DREAMS = [
+  {id:'planet', q:'你想从哪一种世界醒来？', opts:['绒雾星','月白星','玄岩星']},
+  {id:'home', q:'一个让你愿意停留的所在。', opts:['隐入花园','向光而开','珍藏之室']},
+  {id:'journey', q:'下一段旅程，如何展开？', opts:['夜行雅舱','旷野行者','移动客厅']},
+  {id:'sky', q:'光线会改变一切。', opts:['珍珠晨光','蓝调暮色','琥珀时刻']},
+  {id:'sea', q:'你愿意把什么交给海风？', opts:['静水镜面','深蓝潮汐','风的海岸']},
+];
+const TOUCHPOINTS = ['欢迎礼','设计共创','材料会谈','可行性评审','匠造日记','揭幕预约','交付仪式','长期关系'];
+
+/* ==================== store ==================== */
+function defaultState(){
+  const parts = {};
+  PARTS.forEach(p=>{ parts[p.id] = { included:false, material:'', color:'', finish:'', shape:'', process:'', note:'' }; });
+  return {
+    profile: { alias:'', choices:{} },
+    commission: {
+      vehicle:'porsche',
+      parts,
+      quote: { status:'none', min:128000, max:198000, currency:'CNY', packageName:'Porsche 样例' },
+      workflow: { stage:'draft' },
+    },
+    events: [],
+  };
+}
+function load(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const d = JSON.parse(raw); return deepMerge(defaultState(), d); } }catch(e){}
+  return defaultState();
+}
+function deepMerge(base, cur){
+  const out = Array.isArray(base)? [...base] : {...base};
+  for(const k in cur){
+    if(cur[k] && typeof cur[k]==='object' && !Array.isArray(cur[k]) && base[k] && typeof base[k]==='object'){
+      out[k] = deepMerge(base[k], cur[k]);
+    } else out[k] = cur[k];
   }
+  return out;
+}
+function save(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+function emit(s, type, detail){ s.events.push({type, detail, at: new Date().toISOString()}); save(s); }
+
+let S = load();
+if(!localStorage.getItem(LS_KEY)) save(S);
+
+/* ==================== 路由 ==================== */
+const PORTS = [
+  {id:'self', name:'SELF', sub:'客户端'},
+  {id:'muse', name:'MUSE', sub:'设计'},
+  {id:'forge', name:'FORGE', sub:'工程'},
+  {id:'dealer', name:'DEALER', sub:'销售'},
+  {id:'master', name:'MASTER', sub:'管理'},
+  {id:'nexus', name:'NEXUS', sub:'数据'},
+];
+function route(){ return (location.hash||'#/self').replace('#/','').split('/')[0] || 'self'; }
+function go(p){ location.hash = '#/'+p; }
+
+/* ==================== 视图渲染 ==================== */
+const main = document.getElementById('main');
+function h(html){ return html; }
+function render(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = PORTS.map(p=>`<div class="tab ${p.id===route()?'on':''}" onclick="go('${p.id}')">${p.name}<span style="font-size:9px;opacity:.6;margin-left:3px">${p.sub}</span></div>`).join('');
+  const views = { self:viewSelf, muse:viewMuse, forge:viewForge, dealer:viewDealer, master:viewMaster, nexus:viewNexus };
+  main.innerHTML = views[route()]();
+}
+
+/* ---------- SELF ---------- */
+function viewSelf(){
+  const stage = S.commission.workflow.stage;
+  const selCount = Object.values(S.commission.parts).filter(p=>p.included).length;
+  const q = S.commission.quote;
+  return `
+  <div class="head">
+    <div class="tag">SELF · 客户端</div>
+    <h1>你的座驾，你来定义</h1>
+    <div class="sub">从梦境探索开始，玩 Configurator，提交创作方向，看套餐范围与旅程。</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="ic">🌌</span> 01 · 梦境探索 <span class="badge demo">原型假设</span></h3>
+    <div class="dreams">
+      ${DREAMS.map(d=>`
+        <div class="dream">
+          <div class="q">${d.q}</div>
+          <div class="opts">${d.opts.map(o=>`<span class="opt ${S.profile.choices[d.id]===o?'on':''}" onclick="pickDream('${d.id}','${o}')">${o}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>
+    <div class="note">这些答案整理成灵感画像（宁静、亲密、记忆、手作…）。<b>不是心理测评</b>，不生成诊断或分数。</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="ic">🎨</span> 02 · Configurator</h3>
+    <div class="row"><span class="k">已选部件</span><span class="v">${selCount} / 19</span></div>
+    <div class="row"><span class="k">车型</span><span class="v">Porsche 911 Carrera 4S</span></div>
+    <div style="margin-top:12px">
+      <button class="btn" onclick="location.href='configurator.html?mode=self'">打开 3D 定制器 →</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="ic">💰</span> 03 · 费用与时间 <span class="badge demo">样例数据</span></h3>
+    <div class="row"><span class="k">套餐范围</span><span class="v gold">${q.min.toLocaleString()} – ${q.max.toLocaleString()} ${q.currency}</span></div>
+    <div class="row"><span class="k">整体周期</span><span class="v">${overallWeeks()}</span></div>
+    <div class="row"><span class="k">评审状态</span><span class="v">${STAGE_LABEL[stage]}</span></div>
+    <div class="note">先表达可讨论范围；<b>不暴露单件成本</b>。所有数字仍是样例假设，非真实报价。</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="ic">🗺️</span> 04 · 委托旅程</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${TOUCHPOINTS.map(t=>`<span class="step ${t==='欢迎礼'?'done':''}">${t}</span>`).join('')}
+    </div>
+    <div class="note">按真实计划逐步解锁；分享默认私密且由客户授权。</div>
+  </div>
+
+  <div style="margin-top:6px">
+    <button class="btn" onclick="submitBrief()">提交创作方向 →</button>
+    <span class="badge stage">当前 ${STAGE_LABEL[stage]}</span>
+  </div>`;
+}
+
+/* ---------- MUSE ---------- */
+function viewMuse(){
+  const parts = PARTS.filter(p=>S.commission.parts[p.id].included);
+  return `
+  <div class="head"><div class="tag">MUSE · 设计端</div><h1>逐件任务与设计拆解</h1><div class="sub">读取客户草稿，共创设计方向，按部件拆任务/周期，回传提案。</div></div>
+  <div class="card">
+    <h3><span class="ic">📋</span> 入选部件任务（${parts.length} 件）</h3>
+    ${parts.length===0 ? '<div class="note">客户尚未勾选任何部件。先去 SELF → Configurator 勾选。</div>' :
+      parts.map(p=>`
+      <div class="part">
+        <div class="nm">${p.name}<small>${p.focus}</small></div>
+        <div class="wk">${p.baseMin+buf(p)}–${p.baseMax+buf(p)} 周<b>${p.cost.toLocaleString()} ¥</b></div>
+      </div>`).join('')}
+  </div>
+  <div class="card">
+    <h3><span class="ic">🧵</span> 整体周期</h3>
+    <div class="row"><span class="k">最短</span><span class="v">${overallMin()} 周</span></div>
+    <div class="row"><span class="k">最长</span><span class="v">${overallMax()} 周</span></div>
+    <div class="note">并行关键路径粗估；非排产器，未计采购/物流/排队/返工。</div>
+  </div>
+  <button class="btn" onclick="museSubmit()">提交 MUSE 工作包 →</button>`;
+}
+
+/* ---------- FORGE ---------- */
+function viewForge(){
+  const checks = S.commission.forgeChecks || {};
+  return `
+  <div class="head"><div class="tag">FORGE · 工程端</div><h1>可行性、工艺与成本双审</h1><div class="sub">工程可行性、工序与能力路线、逐件周期/成本复核、质量证据。</div></div>
+  <div class="card">
+    <h3><span class="ic">🔬</span> 可行性预审清单</h3>
+    ${['材料','重量','安全','售后','手艺','客户确认'].map((c,i)=>`
+      <div class="row"><span class="k">${c}</span><span class="v" style="cursor:pointer" onclick="toggleCheck('forge',${i})">${checks[c]?'✓ 通过':'待审'}</span></div>`).join('')}
+  </div>
+  <div class="card">
+    <h3><span class="ic">🏭</span> Future Factory OS</h3>
+    <div class="note">长期架构蓝图：软件先行，硬件后接。Adapter 连接 CAD/PLM/ERP/MES/设备。<b>当前未接通真实工厂设备</b>。</div>
+  </div>
+  <button class="btn" onclick="forgePass()">FORGE 复核通过 →</button>`;
+}
+
+/* ---------- DEALER ---------- */
+function viewDealer(){
+  const q = S.commission.quote;
+  return `
+  <div class="head"><div class="tag">DEALER · 销售端</div><h1>内部核价与套餐范围</h1><div class="sub">维护套餐范围、逐件内部成本和原型选项码。客户只看套餐级区间。</div></div>
+  <div class="card">
+    <h3><span class="ic">💼</span> 逐件内部成本 <span class="badge demo">虚构 ratebook</span></h3>
+    ${PARTS.filter(p=>S.commission.parts[p.id].included).map(p=>`
+      <div class="row"><span class="k">${p.name}</span><span class="v">${p.cost.toLocaleString()} ¥</span></div>`).join('') || '<div class="note">无入选部件。</div>'}
+    <div class="row"><span class="k">合计</span><span class="v gold">${totalCost().toLocaleString()} ¥</span></div>
+    <div class="note">最后一列为内部虚构 ratebook，<b>不代表采购成本或供应商报价</b>。</div>
+  </div>
+  <div class="card">
+    <h3><span class="ic">📦</span> 套餐范围</h3>
+    <div class="row"><span class="k">Rough（初步）</span><span class="v">88,000 – 158,000 CNY</span></div>
+    <div class="row"><span class="k">Ready（最终）</span><span class="v gold">${q.min.toLocaleString()} – ${q.max.toLocaleString()} CNY</span></div>
+  </div>
+  <button class="btn" onclick="publishRange()">发布最终套餐范围 →</button>`;
+}
+
+/* ---------- MASTER ---------- */
+function viewMaster(){
+  return `
+  <div class="head"><div class="tag">MASTER · 管理端</div><h1>治理后的洞察</h1><div class="sub">查看聚合趋势和研究问题。</div></div>
+  <div class="card">
+    <h3><span class="ic">📊</span> 聚合趋势 <span class="badge demo">虚构数据</span></h3>
+    <div class="row"><span class="k">Cost of Individuality 趋势</span><span class="v gold">-12% (样本)</span></div>
+    <div class="row"><span class="k">一次制造可行率</span><span class="v">82% (样本)</span></div>
+    <div class="row"><span class="k">复购意向</span><span class="v">高 (样本)</span></div>
+    <div class="note">当前图表样本是<b>虚构数据</b>；生产版只接收经授权、去身份化、满足最小化规则的数据。</div>
+  </div>`;
+}
+
+/* ---------- NEXUS ---------- */
+function viewNexus(){
+  return `
+  <div class="head"><div class="tag">NEXUS · 数据端</div><h1>本机数据状态与事件</h1><div class="sub">维护共享事件、数据导出/删除、状态总览和未来集成契约。</div></div>
+  <div class="card">
+    <h3><span class="ic">🔗</span> 事件列表（${S.events.length}）</h3>
+    ${S.events.slice(-8).reverse().map(e=>`<div class="row"><span class="k">${e.type}</span><span class="v" style="font-weight:400;font-size:10px">${(e.at||'').slice(11,19)}</span></div>`).join('') || '<div class="note">暂无事件。</div>'}
+  </div>
+  <div class="card">
+    <h3><span class="ic">💾</span> 数据操作</h3>
+    <button class="btn sm" onclick="exportData()">导出体验 JSON</button>
+    <button class="btn sm ghost" onclick="clearData()">清除本机记录</button>
+    <div class="note">导出时删除内部 pricing；本机重置直接重建 state。</div>
+  </div>`;
+}
+
+/* ==================== 计算 ==================== */
+function buf(p){ return p.buf; }
+function selectedParts(){ return PARTS.filter(p=>S.commission.parts[p.id].included); }
+function overallMin(){ const sp = selectedParts(); return sp.length? Math.max(...sp.map(p=>p.baseMin+p.buf)) + 2 : 0; }
+function overallMax(){ const sp = selectedParts(); return sp.length? Math.max(...sp.map(p=>p.baseMax+p.buf)) + 4 : 0; }
+function overallWeeks(){ const a=overallMin(), b=overallMax(); return a&&b ? `${a}–${b} 周` : '未选部件'; }
+function totalCost(){ return selectedParts().reduce((s,p)=>s+p.cost,0); }
+
+/* ==================== 动作 ==================== */
+window.pickDream = function(id, val){ S.profile.choices[id]=val; save(S); emit(S,'DREAM_UPDATED',{id,val}); render(); };
+window.toggleCheck = function(group, i){ const keys=['材料','重量','安全','售后','手艺','客户确认']; const c=S.commission.forgeChecks||{}; c[keys[i]]=!c[keys[i]]; S.commission.forgeChecks=c; save(S); render(); };
+
+window.submitBrief = function(){
+  if(selectedParts().length===0){ toast('请先至少勾选一个部件'); return; }
+  if(S.commission.workflow.stage==='draft'){ S.commission.workflow.stage='muse-review'; }
+  emit(S,'CREATIVE_BRIEF_SUBMITTED',{}); save(S); toast('创作方向已提交 → MUSE 拆解'); render();
+};
+window.museSubmit = function(){
+  if(selectedParts().length===0){ toast('无入选部件'); return; }
+  S.commission.workflow.stage='forge-review'; emit(S,'MUSE_WORKPACK_SUBMITTED',{}); save(S); toast('MUSE 工作包已提交 → FORGE 双审'); render();
+};
+window.forgePass = function(){
+  S.commission.workflow.stage='sales-review'; emit(S,'FORGE_REVIEW_PASSED',{}); save(S); toast('FORGE 复核通过 → 销售确认'); render();
+};
+window.publishRange = function(){
+  S.commission.workflow.stage='awaiting-client'; emit(S,'DEALER_PACKAGE_RANGE_PUBLISHED',{}); save(S); toast('最终范围已发布 → 待客户确认'); render();
+};
+window.exportData = function(){
+  const copy = JSON.parse(JSON.stringify(S));
+  if(copy.commission.pricing) delete copy.commission.pricing;
+  const blob = new Blob([JSON.stringify(copy,null,2)], {type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ngbi-experience.json'; a.click();
+  emit(S,'DATA_EXPORTED',{}); toast('数据已导出');
+};
+window.clearData = function(){ localStorage.removeItem(LS_KEY); S=defaultState(); emit(S,'DATA_RESET',{}); toast('本机记录已清除'); render(); };
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent='✦ '+msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1600); }
+
+window.addEventListener('hashchange', render);
+render();
 </script>
 </body>
 </html>
