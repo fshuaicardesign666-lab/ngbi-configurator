@@ -164,6 +164,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ==================== 端模式（SELF客户端 / SELF销售 / MUSE设计） ==================== */
@@ -384,7 +385,10 @@ const MAT = { paint:[], rim:[], caliper:[], lights:[], glass:[], plastic:[], bla
 const overlays = { coachline:[], stripes:[], front:null, rear:null };
 
 const loader = new GLTFLoader();
-loader.load('https://raw.githubusercontent.com/Bhavydeveloper77/BhavyDave_Porsche/master/public/Porsche911.glb', (gltf)=>{
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+loader.setDRACOLoader(dracoLoader);
+loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Porsche911_draco.glb', (gltf)=>{
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
