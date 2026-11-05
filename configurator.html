@@ -184,17 +184,16 @@
 
 <script type="importmap">
 {"imports":{
-  "three":"https://unpkg.com/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"
+  "three":"https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/three.module.js"
 }}
 </script>
 
 <script type="module">
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
+import { GLTFLoader } from './vendor/GLTFLoader.js';
+import { DRACOLoader } from './vendor/DRACOLoader.js';
+import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 
 /* ==================== 端模式（SELF客户端 / SELF销售 / MUSE设计） ==================== */
 const MODES = {
@@ -441,7 +440,7 @@ window.switchModel = function(id){
 };
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+dracoLoader.setDecoderPath('./vendor/draco/');
 loader.setDRACOLoader(dracoLoader);
 function loadModel(url){
   loader.load(url, (gltf)=>{
