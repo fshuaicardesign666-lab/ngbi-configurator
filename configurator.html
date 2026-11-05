@@ -652,11 +652,21 @@ CHECKLIST.forEach(cat=>{
 });
 
 let currentId = 'paint';
+// checklist id → 3D 零件分类（用于点击清单项高亮对应 3D 零件）
+const ID_TO_PART = { paint:'body', rim:'wheel', caliper:'caliper', lights:'light', glass:'glass', trim:'trim' };
+let highlightTimer = null;
 function selectItem(id){
   currentId = id;
   document.querySelectorAll('.item').forEach(el=>el.classList.toggle('on', el.dataset.id===id));
   renderTray(id);
   renderDockTitle(id);
+  // 3D 零件高亮联动：点清单项，对应 3D 零件高亮 1.6s
+  const part = ID_TO_PART[id];
+  if(part && PARTS[part] && PARTS[part].length){
+    highlightPart(part);
+    clearTimeout(highlightTimer);
+    highlightTimer = setTimeout(clearHighlight, 1600);
+  }
 }
 function findItem(id){ for(const c of CHECKLIST) for(const it of c.items) if(it.id===id) return it; }
 
