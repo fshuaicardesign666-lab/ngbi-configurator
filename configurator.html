@@ -303,9 +303,9 @@ const CHECKLIST = [
     {id:'rearpattern', label:'尾盖图案', en:'Rear Pattern', apply:'rearpattern'},
   ]},
   { cat:'内饰', ic:'🛋️', items:[
-    {id:'leather', label:'皮革', en:'Leather'},
-    {id:'stitch', label:'缝线', en:'Stitching'},
-    {id:'veneer', label:'饰板', en:'Veneer'},
+    {id:'leather', label:'皮革', en:'Leather', apply:'leather'},
+    {id:'stitch', label:'缝线', en:'Stitching', apply:'stitch'},
+    {id:'veneer', label:'饰板', en:'Veneer', apply:'veneer'},
     {id:'starlight', label:'星空顶', en:'Starlight'},
     {id:'doorpanel', label:'门板', en:'Door Panel'},
     {id:'seatback', label:'座椅背板', en:'Seat Back'},
@@ -401,7 +401,7 @@ floor.rotation.x = -Math.PI/2; floor.position.y = -0.01; floor.receiveShadow = t
 
 /* ==================== 模型 + 材质映射 ==================== */
 const carRoot = new THREE.Group(); scene.add(carRoot);
-const MAT = { paint:[], rim:[], caliper:[], lights:[], glass:[], plastic:[], black:[] };
+const MAT = { paint:[], leather:[], wood:[], alcantara:[], carpet:[], stitch:[], perforated:[], glass:[], wheel:[], light:[], grille:[], chrome:[], caliper:[], interior:[] };
 const overlays = { coachline:[], stripes:[], front:null, rear:null };
 // 零件树(爆炸图/高亮) — 参考 Robotic Pollinator 程序化零件拆解
 const PARTS = { body:[], wheel:[], caliper:[], glass:[], light:[], trim:[], interior:[] };
@@ -413,7 +413,7 @@ const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
 loader.setDRACOLoader(dracoLoader);
-loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Porsche911_draco.glb', (gltf)=>{
+loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Ghost_draco.glb', (gltf)=>{
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
@@ -429,13 +429,20 @@ loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/release
       let cat = 'interior';
       mats.forEach(m=>{
         const n = (m.name||'').toLowerCase();
-        if(n==='paint'||n==='coat'){ MAT.paint.push(m); cat = 'body'; }
-        else if(n==='silver'){ MAT.rim.push(m); cat = 'wheel'; }
-        else if(n==='material.001'){ MAT.caliper.push(m); cat = 'caliper'; }
-        else if(n==='lights'){ MAT.lights.push(m); cat = 'light'; }
-        else if(n==='window'||n==='glass'){ MAT.glass.push(m); cat = 'glass'; }
-        else if(n==='plastic'){ MAT.plastic.push(m); cat = 'trim'; }
-        else if(n==='full_black'||n==='material'){ MAT.black.push(m); cat = 'trim'; }
+        if(/paint/.test(n)){ MAT.paint.push(m); cat = 'body'; }
+        else if(/leather/.test(n)){ MAT.leather.push(m); cat = 'interior'; }
+        else if(/wood|goodwood/.test(n)){ MAT.wood.push(m); cat = 'interior'; }
+        else if(/alcantara/.test(n)){ MAT.alcantara.push(m); cat = 'interior'; }
+        else if(/carpet/.test(n)){ MAT.carpet.push(m); cat = 'interior'; }
+        else if(/stitch/.test(n)){ MAT.stitch.push(m); cat = 'interior'; }
+        else if(/perforated/.test(n)){ MAT.perforated.push(m); cat = 'interior'; }
+        else if(/glass|window/.test(n)){ MAT.glass.push(m); cat = 'glass'; }
+        else if(/wheel/.test(n)){ MAT.wheel.push(m); cat = 'wheel'; }
+        else if(/caliper|brake/.test(n)){ MAT.caliper.push(m); cat = 'caliper'; }
+        else if(/headlight|taillight|signal|runninglight|reverselight|highbeam|lowbeam|parkingbrake/.test(n)){ MAT.light.push(m); cat = 'light'; }
+        else if(/radiator/.test(n)){ MAT.grille.push(m); cat = 'trim'; }
+        else if(/chrome|mirror/.test(n)){ MAT.chrome.push(m); cat = 'trim'; }
+        else { MAT.interior.push(m); cat = 'interior'; }
       });
       PARTS[cat].push(o);
       partCats.set(o, cat);
@@ -455,15 +462,20 @@ function setColor(mats, hex, metalness, roughness){
   mats.forEach(m=>{ if(hex!==null){ m.color.setHex(hex); } m.metalness=metalness; m.roughness=roughness; });
 }
 const APPLY = {
-  paint(){ setColor(MAT.paint, PALETTES.paint[state.paint].color, 0.4, 0.42); },
-  rim(){ setColor(MAT.rim, PALETTES.rim[state.rim].color, 0.85, 0.3); },
-  caliper(){ setColor(MAT.caliper, PALETTES.caliper[state.caliper].color, 0.5, 0.35); },
-  lights(){ setColor(MAT.lights, PALETTES.lights[state.lights].color, 0.1, 0.4); },
+  paint(){ setColor(MAT.paint, PALETTES.paint[state.paint].color, 0.3, 0.15); },
+  rim(){ setColor(MAT.wheel, PALETTES.rim[state.rim].color, 0.85, 0.25); },
+  caliper(){ setColor(MAT.caliper, PALETTES.caliper[state.caliper].color, 0.5, 0.3); },
+  lights(){ setColor(MAT.light, PALETTES.lights[state.lights].color, 0.1, 0.3); },
   glass(){ setColor(MAT.glass, PALETTES.glass[state.glass].color, 0.1, 0.1); },
   trim(){
     const c = PALETTES.trim[state.trim];
-    setColor(MAT.plastic, c.color===null ? PALETTES.paint[state.paint].color : c.color, 0.3, 0.5);
+    const col = c.color===null ? PALETTES.paint[state.paint].color : c.color;
+    setColor(MAT.chrome.concat(MAT.grille), col, 0.9, 0.25);
   },
+  leather(){ setColor(MAT.leather, PALETTES.leather[state.leather].color, 0.05, 0.55); },
+  veneer(){ setColor(MAT.wood, PALETTES.veneer[state.veneer].color, 0.5, 0.3); },
+  stitch(){ setColor(MAT.stitch, PALETTES.stitch[state.stitch].color, 0.0, 0.7); },
+  seattexture(){ setColor(MAT.perforated.concat(MAT.alcantara), PALETTES.seattexture[state.seattexture].color, 0.1, 0.6); },
   mood(){
     const m = PALETTES.mood[state.mood];
     moodLight.color.setHex(m.color); moodLight.intensity = 3.0; scene.background.setHex(m.bg);
@@ -653,7 +665,7 @@ CHECKLIST.forEach(cat=>{
 
 let currentId = 'paint';
 // checklist id → 3D 零件分类（用于点击清单项高亮对应 3D 零件）
-const ID_TO_PART = { paint:'body', rim:'wheel', caliper:'caliper', lights:'light', glass:'glass', trim:'trim' };
+const ID_TO_PART = { paint:'body', rim:'wheel', caliper:'caliper', lights:'light', glass:'glass', trim:'trim', leather:'interior', veneer:'interior', stitch:'interior' };
 let highlightTimer = null;
 function selectItem(id){
   currentId = id;
