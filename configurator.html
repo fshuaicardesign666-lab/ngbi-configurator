@@ -86,7 +86,11 @@
   .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:40;background:#1A1622;border:1px solid var(--line);border-radius:12px;padding:11px 18px;font-size:12px;opacity:0;transition:all .3s;pointer-events:none;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .loading{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--bg);}
-  .explode-panel{position:fixed;right:14px;top:152px;z-index:11;width:208px;padding:14px;background:rgba(7,26,23,.85);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);}
+  .car-switch{position:fixed;right:14px;top:58px;z-index:11;display:flex;gap:6px;background:rgba(7,26,23,.85);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:999px;padding:5px;}
+  .car-switch button{padding:6px 13px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:10px;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .18s;}
+  .car-switch button:hover{color:var(--ink);}
+  .car-switch button.on{background:var(--ink-strong);color:#10231D;}
+  .explode-panel{position:fixed;right:14px;top:112px;z-index:11;width:208px;padding:14px;background:rgba(7,26,23,.85);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);}
   .exp-head{font-size:10px;letter-spacing:.18em;color:var(--ink-strong);font-weight:400;display:flex;justify-content:space-between;align-items:center;}
   .exp-head .en{color:var(--muted);font-size:8px;letter-spacing:.1em;}
   .explode-panel input[type=range]{width:100%;accent-color:#C59AEF;cursor:pointer;}
@@ -126,7 +130,7 @@
     </div>
   </div>
   <div class="hint" style="text-align:right">
-    <div style="font-size:12px;color:var(--ink-strong);letter-spacing:.08em">Rolls-Royce Ghost</div>
+    <div style="font-size:12px;color:var(--ink-strong);letter-spacing:.08em" id="carName">Rolls-Royce Ghost</div>
     <div style="font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.08em">拖拽旋转 · 滚轮缩放 · 自动旋转</div>
   </div>
 </div>
@@ -148,6 +152,11 @@
 </div>
 
 <button class="back" onclick="location.href='index.html#/self'">← NGBI 系统</button>
+<div class="car-switch" id="carSwitch">
+  <button class="on" data-m="ghost">Ghost</button>
+  <button data-m="droptail">Droptail</button>
+  <button data-m="porsche">Porsche 911</button>
+</div>
 <button class="save" id="saveBtn">生成配置卡 ✦</button>
 <div class="explode-panel" id="explodePanel">
   <div class="exp-head">零件拆解 <span class="en">EXPLODED VIEW</span></div>
@@ -409,11 +418,33 @@ const partOrigins = new Map();   // mesh -> 原始 position
 const partCats = new Map();      // mesh -> 分类
 let explodeLevel = 0;
 
+const MODELS = {
+  ghost:    { name:'Rolls-Royce Ghost',    glb:'https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Ghost_draco.glb' },
+  droptail: { name:'Rolls-Royce Droptail', glb:'https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Droptail_draco.glb' },
+  porsche:  { name:'Porsche 911',          glb:'https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Porsche911int_opt.glb' },
+};
+let currentModel = 'ghost';
+window.switchModel = function(id){
+  if(!MODELS[id] || id===currentModel) return;
+  currentModel = id;
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loadPct').textContent = '切换车型…';
+  // 清空旧模型
+  while(carRoot.children.length){ carRoot.remove(carRoot.children[0]); }
+  Object.keys(MAT).forEach(k=>MAT[k].length=0);
+  Object.keys(PARTS).forEach(k=>PARTS[k].length=0);
+  partOrigins.clear(); partCats.clear();
+  overlays.coachline=[]; overlays.stripes=[]; overlays.front=null; overlays.rear=null;
+  // 更新车型名 + 加载
+  document.getElementById('carName').textContent = MODELS[id].name;
+  loadModel(MODELS[id].glb);
+};
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
 loader.setDRACOLoader(dracoLoader);
-loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/releases/download/glb-1.0/Ghost_draco.glb', (gltf)=>{
+function loadModel(url){
+  loader.load(url, (gltf)=>{
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
@@ -429,18 +460,18 @@ loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/release
       let cat = 'interior';
       mats.forEach(m=>{
         const n = (m.name||'').toLowerCase();
-        if(/paint/.test(n)){ MAT.paint.push(m); cat = 'body'; }
+        if(/paint|body_main|droptail|scene_-_root/.test(n)){ MAT.paint.push(m); cat = 'body'; }
         else if(/leather/.test(n)){ MAT.leather.push(m); cat = 'interior'; }
         else if(/wood|goodwood/.test(n)){ MAT.wood.push(m); cat = 'interior'; }
         else if(/alcantara/.test(n)){ MAT.alcantara.push(m); cat = 'interior'; }
-        else if(/carpet/.test(n)){ MAT.carpet.push(m); cat = 'interior'; }
-        else if(/stitch/.test(n)){ MAT.stitch.push(m); cat = 'interior'; }
+        else if(/carpet|rug/.test(n)){ MAT.carpet.push(m); cat = 'interior'; }
+        else if(/stitch|seam/.test(n)){ MAT.stitch.push(m); cat = 'interior'; }
         else if(/perforated/.test(n)){ MAT.perforated.push(m); cat = 'interior'; }
         else if(/glass|window/.test(n)){ MAT.glass.push(m); cat = 'glass'; }
         else if(/wheel/.test(n)){ MAT.wheel.push(m); cat = 'wheel'; }
         else if(/caliper|brake/.test(n)){ MAT.caliper.push(m); cat = 'caliper'; }
         else if(/headlight|taillight|signal|runninglight|reverselight|highbeam|lowbeam|parkingbrake/.test(n)){ MAT.light.push(m); cat = 'light'; }
-        else if(/radiator/.test(n)){ MAT.grille.push(m); cat = 'trim'; }
+        else if(/radiator|grille/.test(n)){ MAT.grille.push(m); cat = 'trim'; }
         else if(/chrome|mirror/.test(n)){ MAT.chrome.push(m); cat = 'trim'; }
         else { MAT.interior.push(m); cat = 'interior'; }
       });
@@ -453,9 +484,11 @@ loader.load('https://github.com/fshuaicardesign666-lab/ngbi-configurator/release
   refreshAll();
   document.getElementById('loading').style.display = 'none';
   console.log('材质映射:', Object.fromEntries(Object.entries(MAT).map(([k,v])=>[k,v.length])));
-}, (e)=>{ 
-  if(e.total){ const pct = Math.round(e.loaded/e.total*100); const el=document.getElementById('loadPct'); if(el) el.textContent = '加载中 '+pct+'%'; }
-}, ()=>{ document.getElementById('loading').innerHTML = '<span style="color:var(--muted)">模型加载失败，请刷新重试（网络较慢，请稍候）</span>'; });
+  }, (e)=>{ 
+    if(e.total){ const pct = Math.round(e.loaded/e.total*100); const el=document.getElementById('loadPct'); if(el) el.textContent = '加载中 '+pct+'%'; }
+  }, ()=>{ document.getElementById('loading').innerHTML = '<span style="color:var(--muted)">模型加载失败，请刷新重试（网络较慢，请稍候）</span>'; });
+}
+loadModel(MODELS.ghost.glb);
 
 /* ==================== 应用函数 ==================== */
 function setColor(mats, hex, metalness, roughness){
@@ -545,6 +578,14 @@ function clearHighlight(){
 }
 window.__parts = { PARTS, partOrigins, partCats, setExplode, highlightPart, clearHighlight };
 
+/* 车型切换事件 */
+document.querySelectorAll('#carSwitch button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#carSwitch button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    switchModel(b.dataset.m);
+  });
+});
 /* 爆炸图滑块 + 零件高亮事件 */
 document.getElementById('explodeRange').addEventListener('input', (e)=>{
   setExplode(e.target.value / 100);
