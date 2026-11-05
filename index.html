@@ -48,6 +48,15 @@
   .btn.sm{padding:8px 15px;font-size:11px;}
   .btn:disabled{opacity:.4;cursor:not-allowed;}
   .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:12px;}
+  .gantt{margin-top:14px;}
+  .g-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:11px;}
+  .g-name{flex:0 0 72px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;}
+  .g-name.cp{color:var(--gold);font-weight:400;}
+  .g-bar-wrap{flex:1;height:14px;background:rgba(255,255,255,.05);border-radius:7px;position:relative;overflow:hidden;}
+  .g-bar{position:absolute;top:2px;bottom:2px;border-radius:5px;background:rgba(197,154,239,.4);}
+  .g-bar.cp{background:linear-gradient(90deg,var(--gold),#d9c08a);box-shadow:0 0 8px rgba(187,166,111,.4);}
+  .g-wk{flex:0 0 38px;text-align:right;color:var(--muted);font-size:10px;}
+  .g-axis{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);padding-top:4px;border-top:1px solid rgba(255,255,255,.06);}
   .row:last-child{border-bottom:none;}
   .row .k{color:var(--muted);flex:0 0 auto;}
   .row .v{color:var(--ink);font-weight:400;text-align:right;}
@@ -207,6 +216,27 @@ function criticalPath(){
   return {weeks:longest, path, covered:['基准周期','缓冲','依赖关系','关键路径'], uncovered:['采购','物流','排队','返工','资源冲突','供应商真实产能']};
 }
 function totalInternalCost(){ return PARTS.filter(p=>S.parts[p.id].included).reduce((s,p)=>s+p.cost,0); }
+function ganttView(){
+  const selected = PARTS.filter(p=>S.parts[p.id].included);
+  if(!selected.length) return '';
+  const cp = criticalPath();
+  const total = cp.weeks || 1;
+  const start = {};
+  function startOf(p){
+    if(start[p.id]!==undefined) return start[p.id];
+    const dd = p.deps.filter(d=>S.parts[d]&&S.parts[d].included);
+    const s = dd.length ? Math.max(...dd.map(d=>startOf(PARTS.find(x=>x.id===d)) + partWeeks(PARTS.find(x=>x.id===d)).max)) : 0;
+    start[p.id] = s; return s;
+  }
+  selected.forEach(p=>startOf(p));
+  const rows = selected.slice().sort((a,b)=>start[a.id]-start[b.id]).map(p=>{
+    const s = start[p.id], w = partWeeks(p).max;
+    const left = (s/total*100), width = Math.max(2, (w/total*100));
+    const onPath = cp.path.includes(p.id);
+    return `<div class="g-row"><span class="g-name ${onPath?'cp':''}">${p.name}</span><div class="g-bar-wrap"><div class="g-bar ${onPath?'cp':''}" style="left:${left}%;width:${width}%"></div></div><span class="g-wk">${w}周</span></div>`;
+  }).join('');
+  return `<div class="gantt">${rows}<div class="g-axis"><span>0 周</span><span>${Math.round(total/2)} 周</span><span>${total} 周</span></div></div>`;
+}
 
 const PORTS = [ {id:'self',name:'SELF',sub:'客户'},{id:'muse',name:'MUSE',sub:'设计'},{id:'forge',name:'FORGE',sub:'工程'},{id:'dealer',name:'DEALER',sub:'销售'},{id:'master',name:'MASTER',sub:'管理'},{id:'nexus',name:'NEXUS',sub:'数据'} ];
 function route(){ return (location.hash||'#/self').replace('#/','').split('/')[0]||'self'; }
@@ -235,7 +265,8 @@ function viewSelf(){
   <div class="card"><h3><span class="ic">💰</span> 费用与时间 ${clientQuote?`<span class="badge stage">${QUOTE_STATUS[q.status]}</span>`:''}</h3>
     ${clientQuote?`<div class="row"><span class="k">套餐范围</span><span class="v gold">${clientQuote.min.toLocaleString()} – ${clientQuote.max.toLocaleString()} ${clientQuote.currency||'CNY'}</span></div><div class="row"><span class="k">假设与有效期</span><span class="v muted">${clientQuote.assumptions||'—'}</span></div>`:`<div class="row"><span class="k">套餐范围</span><span class="v muted">尚未发布（团队评估中）</span></div>`}
     <div class="row"><span class="k">整体周期（关键路径）</span><span class="v">${cp.weeks?cp.weeks+' 周':'未选部件'}</span></div>
-    <div class="note">周期基于<b>关键路径</b>估算。已覆盖：${cp.covered.join('、')}。<b>未覆盖</b>：${cp.uncovered.join('、')}。当前是<b>原型估算</b>，非承诺交期。</div></div>
+    ${ganttView()}
+    <div class="note">金色条 = 关键路径。周期基于<b>关键路径</b>估算。已覆盖：${cp.covered.join('、')}。<b>未覆盖</b>：${cp.uncovered.join('、')}。当前是<b>原型估算</b>，非承诺交期。</div></div>
   <div class="card"><h3><span class="ic">🗺️</span> 委托旅程</h3><div class="flow">${TOUCHPOINTS.map((t,i)=>`<span class="step ${i===0?'done':''}">${t}</span>`).join('')}</div><div class="note">按真实计划逐步解锁；分享默认私密且由客户授权。</div></div>
   <div style="margin-top:6px">
     ${S.workflow.stage==='draft'?`<button class="btn" onclick="submitBrief()">提交创作方向 →</button>`:''}
