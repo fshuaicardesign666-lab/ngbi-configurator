@@ -347,6 +347,7 @@ window.exportData=function(){ const copy=JSON.parse(JSON.stringify(S)); const bl
 window.clearData=function(){ localStorage.removeItem(LS_KEY); S=defaultState(); save(S); toast('本机记录已清除'); render(); };
 function toast(msg){ const t=document.getElementById('toast'); t.textContent='✦ '+msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800); }
 window.addEventListener('hashchange', render);
+window.__ngbi = { get S(){return S;}, set S(v){S=v;}, PARTS, ganttView, criticalPath, partWeeks };
 render();
 </script>
 </body>
