@@ -26,7 +26,7 @@
   .enso{width:24px;height:24px;border:1.5px solid var(--ink);border-radius:50%;flex:0 0 auto;background:linear-gradient(140deg,#D6B8F5,#8C6AB1);box-shadow:0 0 28px rgba(197,154,239,.25);}
   .brand .t{font-size:13px;font-weight:400;letter-spacing:.3em;color:var(--ink-strong);}
   .brand .t span{color:var(--ink);}
-  .brand .sub{font-size:8px;letter-spacing:.2em;color:var(--muted);margin-top:3px;text-transform:uppercase;}
+  .brand .sub{display:none;}
   .top .hint{font-size:9.5px;color:var(--muted);letter-spacing:.05em;}
 
   /* 左侧 checklist */
@@ -42,7 +42,8 @@
   .item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:11px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
   .item:hover{background:rgba(255,255,255,.05);}
   .item.on{background:rgba(197,154,239,.13);border-color:rgba(197,154,239,.3);}
-  .item .l{font-size:12px;letter-spacing:.03em;}
+  .item .ic-item{font-size:15px;flex:0 0 auto;margin-right:8px;opacity:.85;}
+  .item .l{font-size:12.5px;letter-spacing:.03em;flex:1;}
   .item .l .en{display:block;font-size:8px;color:var(--muted);letter-spacing:.08em;margin-top:1px;text-transform:uppercase;}
   .item .v{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
   .item .v .dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.25);flex:0 0 auto;}
@@ -51,20 +52,23 @@
 
   /* 底部色板 */
   .dock{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;gap:9px;align-items:center;max-width:94vw;}
-  .dock-t{font-size:11px;letter-spacing:.16em;color:var(--ink-strong);font-weight:400;}
+  .dock-t{font-size:12px;letter-spacing:.2em;color:var(--ink-strong);font-weight:500;display:flex;align-items:center;gap:8px;}
+  .dock-t::before{content:"";width:18px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
   .dock-t .en{color:var(--muted);font-size:9px;}
   .tray{display:flex;gap:11px;padding:14px 18px;background:rgba(7,26,23,.72);backdrop-filter:blur(22px) saturate(1.2);border:1px solid var(--line);border-radius:24px;max-width:94vw;overflow-x:auto;box-shadow:0 18px 50px rgba(0,0,0,.35);}
-  .swatch{width:54px;height:54px;border-radius:50%;border:1px solid rgba(211,186,240,.25);cursor:pointer;transition:all .25s cubic-bezier(.22,.61,.36,1);position:relative;flex:0 0 auto;
-    box-shadow:inset -6px -7px 12px rgba(0,0,0,.55), inset 3px 3px 6px rgba(255,255,255,.28), 0 6px 16px rgba(0,0,0,.5);}
-  .swatch:hover{transform:translateY(-4px) scale(1.06);}
-  .swatch.on{border-color:#BBA66F;box-shadow:0 0 0 2px #BBA66F, inset -6px -7px 12px rgba(0,0,0,.55), inset 3px 3px 6px rgba(255,255,255,.28);}
+  .swatch{width:64px;height:64px;border-radius:50%;border:1px solid rgba(211,186,240,.28);cursor:pointer;transition:all .3s cubic-bezier(.22,.61,.36,1);position:relative;flex:0 0 auto;
+    box-shadow:inset -8px -9px 16px rgba(0,0,0,.6), inset 4px 4px 9px rgba(255,255,255,.32), 0 8px 20px rgba(0,0,0,.5);}
+  .swatch::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(120% 90% at 32% 24%, rgba(255,255,255,.5), rgba(255,255,255,.06) 42%, transparent 60%);}
+  .swatch:hover{transform:translateY(-6px) scale(1.08);}
+  .swatch.on{border-color:#BBA66F;box-shadow:0 0 0 2px #BBA66F, 0 0 22px rgba(187,166,111,.55), inset -8px -9px 16px rgba(0,0,0,.6), inset 4px 4px 9px rgba(255,255,255,.32);}
   .swatch .nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap;margin-top:7px;opacity:0;transition:opacity .2s;pointer-events:none;letter-spacing:.04em;}
   .swatch:hover .nm{opacity:1;}
 
   /* 按钮 */
   .menu{position:fixed;left:14px;top:58px;z-index:11;width:42px;height:42px;border-radius:12px;background:rgba(7,26,23,.85);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--ink);font-size:16px;cursor:pointer;transition:all .22s ease;}
   .menu:hover{border-color:var(--ink-strong);transform:translateY(-1px);}
-  .summary{position:fixed;right:14px;top:58px;z-index:11;height:38px;padding:0 14px;border-radius:11px;background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);font-size:11px;cursor:pointer;letter-spacing:.06em;}
+  .summary{position:fixed;right:14px;top:58px;z-index:11;height:38px;padding:0 14px;border-radius:11px;background:rgba(7,26,23,.8);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--ink);font-size:11px;cursor:pointer;letter-spacing:.06em;transition:all .2s;}
+  .summary:hover{border-color:var(--ink-strong);transform:translateY(-1px);}
   .save{position:fixed;right:14px;top:104px;z-index:11;background:linear-gradient(130deg,#B999DF,#8E6AB6);color:#10231D;border:1px solid rgba(216,190,244,.65);border-radius:999px;padding:12px 22px;font-size:11px;font-weight:550;letter-spacing:.08em;cursor:pointer;box-shadow:0 8px 24px rgba(154,111,194,.14);transition:transform .22s ease,filter .22s ease,box-shadow .22s ease;}
   .save:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 12px 28px rgba(172,133,210,.24);}
   .back{position:fixed;left:14px;top:104px;z-index:11;background:rgba(7,26,23,.85);backdrop-filter:blur(16px);border:1px solid rgba(197,154,239,.45);color:var(--ink);border-radius:999px;padding:11px 18px;font-size:11px;font-weight:400;cursor:pointer;letter-spacing:.08em;transition:all .22s ease;}
@@ -130,13 +134,12 @@
     </div>
   </div>
   <div class="hint" style="text-align:right">
-    <div style="font-size:12px;color:var(--ink-strong);letter-spacing:.08em" id="carName">Rolls-Royce Ghost</div>
-    <div style="font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.08em">拖拽旋转 · 滚轮缩放 · 自动旋转</div>
+    <div style="font-size:16px;color:var(--ink-strong);letter-spacing:.12em;font-weight:400" id="carName">Rolls-Royce Ghost</div>
   </div>
 </div>
 
 <button class="menu" id="menuBtn">☰</button>
-<button class="summary" id="summaryBtn">配置清单</button>
+<button class="summary" id="summaryBtn">清单 · SPEC</button>
 
 <div class="side" id="side">
   <div class="side-head">
@@ -157,9 +160,9 @@
   <button data-m="droptail">Droptail</button>
   <button data-m="porsche">Porsche 911</button>
 </div>
-<button class="save" id="saveBtn">生成配置卡 ✦</button>
+<button class="save" id="saveBtn">保存配置 ✦</button>
 <div class="explode-panel" id="explodePanel">
-  <div class="exp-head">零件拆解 <span class="en">EXPLODED VIEW</span></div>
+  <div class="exp-head">拆解 <span class="en">VIEW</span></div>
   <input type="range" id="explodeRange" min="0" max="100" value="0" />
   <div class="exp-parts" id="expParts">
     <button class="exp-btn" data-cat="body">车身</button>
@@ -331,6 +334,10 @@ const CHECKLIST = [
   ]},
 ];
 
+const ITEM_IC = { paint:'🎨', rim:'⚙️', caliper:'🔴', lights:'💡', glass:'🪟', trim:'✨', coachline:'➰', stripes:'〰️',
+  frontpattern:'🖌️', rearpattern:'🖌️', leather:'🛋️', stitch:'🧵', veneer:'🪵', starlight:'🌌', doorpanel:'🚪',
+  seatback:'💺', fascia:'🎛️', embroidery:'🪡', seattexture:'🧶', treadplate:'🪜', rearseatback:'💺', metal:'🪞', steering:'🛞',
+  mood:'🌈', scene:'🏞️' };
 const state = {};   // { paint:0, rim:0, ... }
 CHECKLIST.forEach(c=>c.items.forEach(it=>{ state[it.id]=0; }));
 const included = {};  // 每个 checklist 项是否选入创作清单
@@ -695,7 +702,7 @@ CHECKLIST.forEach(cat=>{
   ct.innerHTML = `<div class="cat-t"><span class="ic">${cat.ic}</span>${cat.cat}</div>`;
   cat.items.forEach(it=>{
     const d = document.createElement('div'); d.className='item'; d.dataset.id = it.id;
-    d.innerHTML = `<div class="ck ${included[it.id]?'on':''}">${included[it.id]?'✓':''}</div><div class="l">${it.label}<span class="en">${it.en}</span></div><div class="v"><span class="val-txt"></span><span class="dot" style="background:transparent"></span></div>`;
+    d.innerHTML = `<div class="ck ${included[it.id]?'on':''}">${included[it.id]?'✓':''}</div><div class="ic-item">${ITEM_IC[it.id]||'·'}</div><div class="l">${it.label}</div><div class="v"><span class="val-txt"></span><span class="dot" style="background:transparent"></span></div>`;
     d.querySelector('.ck').onclick = (e)=>{ e.stopPropagation(); included[it.id]=!included[it.id]; d.querySelector('.ck').classList.toggle('on', included[it.id]); d.querySelector('.ck').textContent = included[it.id]?'✓':''; syncToNGBI(); };
     d.onclick = ()=> selectItem(it.id);
     ct.appendChild(d);
