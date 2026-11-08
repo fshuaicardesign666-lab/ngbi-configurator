@@ -57,13 +57,14 @@
 
   /* 底部色板 */
   .dock{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;gap:9px;align-items:center;max-width:94vw;}
-  .dock-t{font-size:12px;letter-spacing:.2em;color:var(--ink-strong);font-weight:500;display:flex;align-items:center;gap:8px;}
-  .dock-t::before{content:"";width:18px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .dock-t{font-size:14px;letter-spacing:.24em;color:var(--ink-strong);font-weight:500;display:flex;align-items:center;gap:10px;}
+  .dock-t::before{content:"";width:22px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .dock-t::after{content:"";width:22px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);}
   .dock-t .en{color:var(--muted);font-size:9px;}
-  .tray{display:flex;gap:11px;padding:14px 18px;background:rgba(7,26,23,.72);backdrop-filter:blur(22px) saturate(1.2);border:1px solid var(--line);border-radius:24px;max-width:94vw;overflow-x:auto;box-shadow:0 18px 50px rgba(0,0,0,.35);}
-  .swatch{width:62px;border-radius:14px;border:1px solid rgba(211,186,240,.22);cursor:pointer;transition:all .28s cubic-bezier(.22,.61,.36,1);position:relative;flex:0 0 auto;padding:5px;display:flex;flex-direction:column;gap:5px;background:rgba(16,45,38,.6);}
-  .swatch .sw-block{display:block;width:100%;height:40px;border-radius:9px;box-shadow:inset -6px -7px 12px rgba(0,0,0,.55), inset 3px 3px 7px rgba(255,255,255,.3);}
-  .swatch .sw-name{display:block;font-size:8.5px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;}
+  .tray{display:flex;gap:13px;padding:18px 22px;background:rgba(7,26,23,.66);backdrop-filter:blur(26px) saturate(1.25);border:1px solid rgba(211,186,240,.16);border-radius:26px;max-width:96vw;overflow-x:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+  .swatch{width:74px;border-radius:16px;border:1px solid rgba(211,186,240,.22);cursor:pointer;transition:all .28s cubic-bezier(.22,.61,.36,1);position:relative;flex:0 0 auto;padding:6px;display:flex;flex-direction:column;gap:6px;background:rgba(16,45,38,.6);}
+  .swatch .sw-block{display:block;width:100%;height:52px;border-radius:11px;box-shadow:inset -6px -7px 12px rgba(0,0,0,.55), inset 3px 3px 7px rgba(255,255,255,.3);}
+  .swatch .sw-name{display:block;font-size:9px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;}
   .swatch:hover{transform:translateY(-3px);border-color:rgba(197,154,239,.55);}
   .swatch.on{border-color:#BBA66F;box-shadow:0 0 0 1.5px #BBA66F, 0 0 18px rgba(187,166,111,.4);}
   .swatch.on .sw-name{color:var(--ink-strong);}
@@ -735,7 +736,7 @@ function findItem(id){ for(const c of CHECKLIST) for(const it of c.items) if(it.
 
 function renderDockTitle(id){
   const it = findItem(id);
-  document.getElementById('dockTitle').innerHTML = `${it.label} <span class="en">${it.en}</span>`;
+  document.getElementById('dockTitle').innerHTML = it.label;
 }
 function ballGradient(hex){
   const c = new THREE.Color(hex);
