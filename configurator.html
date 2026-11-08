@@ -99,7 +99,10 @@
   .car-switch button{padding:6px 13px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:10px;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .18s;}
   .car-switch button:hover{color:var(--ink);}
   .car-switch button.on{background:var(--ink-strong);color:#10231D;}
-  .explode-panel{position:fixed;right:14px;top:112px;z-index:11;width:208px;padding:14px;background:rgba(7,26,23,.85);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);}
+  .explode-panel{position:fixed;right:14px;top:112px;z-index:11;width:208px;padding:14px;background:rgba(7,26,23,.85);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:16px;display:none;flex-direction:column;gap:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);}
+  .explode-panel.show{display:flex;}
+  .exp-toggle{position:fixed;right:14px;top:148px;z-index:11;height:34px;padding:0 13px;border-radius:999px;background:rgba(7,26,23,.85);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--muted);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .2s;}
+  .exp-toggle:hover{color:var(--ink);border-color:var(--ink-strong);}
   .exp-head{font-size:10px;letter-spacing:.18em;color:var(--ink-strong);font-weight:400;display:flex;justify-content:space-between;align-items:center;}
   .exp-head .en{color:var(--muted);font-size:8px;letter-spacing:.1em;}
   .explode-panel input[type=range]{width:100%;accent-color:#C59AEF;cursor:pointer;}
@@ -166,6 +169,7 @@
   <button data-m="porsche">Porsche 911</button>
 </div>
 <button class="save" id="saveBtn">保存配置 ✦</button>
+<button class="exp-toggle" id="expToggle">拆解视图</button>
 <div class="explode-panel" id="explodePanel">
   <div class="exp-head">拆解 <span class="en">VIEW</span></div>
   <input type="range" id="explodeRange" min="0" max="100" value="0" />
@@ -459,7 +463,7 @@ function loadModel(url){
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-  const s = 5.0 / Math.max(size.x,size.y,size.z);
+  const s = 6.2 / Math.max(size.x,size.y,size.z);
   model.scale.setScalar(s);
   model.position.x -= center.x*s; model.position.z -= center.z*s; model.position.y -= box.min.y*s;
 
@@ -598,6 +602,9 @@ document.querySelectorAll('#carSwitch button').forEach(b=>{
   });
 });
 /* 爆炸图滑块 + 零件高亮事件 */
+document.getElementById('expToggle').addEventListener('click', ()=>{
+  document.getElementById('explodePanel').classList.toggle('show');
+});
 document.getElementById('explodeRange').addEventListener('input', (e)=>{
   setExplode(e.target.value / 100);
 });
